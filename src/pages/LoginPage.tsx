@@ -44,7 +44,7 @@ export default function LoginPage() {
         return;
       }
 
-      if (decoded.permissions === 1) {
+      if (decoded.permissions === 1 || decoded.permissions === 4) {
         navigate("/gestao", { replace: true });
         return;
       }
