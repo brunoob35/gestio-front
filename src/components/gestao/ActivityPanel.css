@@ -1,0 +1,38 @@
+.activity-panel {
+  min-height: 100%;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 24px;
+  padding: 28px;
+}
+
+.activity-panel h2 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 22px;
+}
+
+.activity-panel__list {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.activity-panel__item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.activity-panel__item strong {
+  font-size: 1.05rem;
+  line-height: 1.45;
+  font-weight: 500;
+  color: #111827;
+}
+
+.activity-panel__item span {
+  font-size: 0.95rem;
+  color: #667085;
+}

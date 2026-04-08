@@ -1,0 +1,198 @@
+.gestao-professores {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.gestao-professores__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.gestao-professores__header h2 {
+  font-size: 2rem;
+  line-height: 1.1;
+  font-weight: 700;
+  color: #111827;
+}
+
+.gestao-professores__header p {
+  margin-top: 6px;
+  font-size: 1.05rem;
+  color: #667085;
+}
+
+.gestao-professores__create-button {
+  height: 52px;
+  border: 0;
+  border-radius: 14px;
+  background: #030722;
+  color: #ffffff;
+  padding: 0 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.gestao-professores__create-button span {
+  font-size: 1.1rem;
+}
+
+.gestao-professores__search-card,
+.gestao-professores__table-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 24px;
+  padding: 22px;
+}
+
+.gestao-professores__search-card input {
+  width: 100%;
+  height: 58px;
+  border: 2px solid #d1d5db;
+  border-radius: 16px;
+  padding: 0 18px;
+  font-size: 1rem;
+  outline: none;
+}
+
+.gestao-professores__search-card input:focus {
+  border-color: #4f46e5;
+}
+
+.gestao-professores__table-header {
+  margin-bottom: 18px;
+}
+
+.gestao-professores__table-header h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.gestao-professores__table-wrapper {
+  overflow-x: auto;
+}
+
+.gestao-professores__table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 980px;
+}
+
+.gestao-professores__table thead th {
+  text-align: left;
+  padding: 16px 10px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #111827;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.gestao-professores__table tbody td {
+  padding: 16px 10px;
+  font-size: 1rem;
+  color: #111827;
+  border-bottom: 1px solid #eef2f6;
+}
+
+.gestao-professores__classes {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.gestao-professores__classes img {
+  width: 18px;
+  height: 18px;
+  opacity: 0.75;
+}
+
+.gestao-professores__status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 30px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: #030722;
+  color: #ffffff;
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-transform: lowercase;
+}
+
+.gestao-professores__actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.gestao-professores__actions button {
+  width: 34px;
+  height: 34px;
+  border: 0;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.gestao-professores__actions button img {
+  width: 18px;
+  height: 18px;
+}
+
+.gestao-professores__actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.gestao-professores__actions button {
+  width: 34px;
+  height: 34px;
+  border: 0;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.gestao-professores__actions button img {
+  width: 18px;
+  height: 18px;
+}
+
+.gestao-professores__trash-icon {
+  filter: brightness(0) saturate(100%) invert(22%) sepia(88%) saturate(2953%)
+    hue-rotate(346deg) brightness(94%) contrast(100%);
+}
+
+.gestao-professores__actions button.is-danger img {
+  filter: hue-rotate(320deg) saturate(4);
+}
+
+.gestao-professores__empty {
+  text-align: center;
+  padding: 28px 12px;
+  color: #667085;
+}
+
+@media (max-width: 992px) {
+  .gestao-professores__header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .gestao-professores__create-button {
+    width: 100%;
+    justify-content: center;
+  }
+}

@@ -55,7 +55,7 @@ export default function LoginPage() {
       }
 
       setErro("Permissão de usuário não reconhecida.");
-    } catch (error) {
+    } catch {
       setErro("Email ou senha inválidos.");
     } finally {
       setLoading(false);
@@ -68,9 +68,7 @@ export default function LoginPage() {
         <header className="login-header">
           <div className="login-logo">🎓</div>
           <h1 className="login-title">Gestio</h1>
-          <p className="login-subtitle">
-            Sistema de Gestão Educacional
-          </p>
+          <p className="login-subtitle">Sistema de Gestão Educacional</p>
         </header>
 
         <form className="login-form" onSubmit={handleSubmit}>
@@ -120,7 +118,11 @@ export default function LoginPage() {
         </form>
 
         <div className="login-helper">
-          <button type="button" className="login-helper-text">
+          <button
+            type="button"
+            className="login-helper-text"
+            onClick={() => navigate("/forgot-password")}
+          >
             Esqueci minha senha
           </button>
         </div>
