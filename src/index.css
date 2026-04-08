@@ -12,6 +12,13 @@ body,
 
 body {
   font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  background: linear-gradient(180deg, #d9e1f2 0%, #cfd7e8 100%);
+  background: #f4f5f7;
   color: #111827;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
 }

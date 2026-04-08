@@ -1,0 +1,123 @@
+.professor-modal__backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(17, 24, 39, 0.42);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 1000;
+}
+
+.professor-modal {
+  width: 100%;
+  max-width: 760px;
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 24px;
+  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.22);
+}
+
+.professor-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.professor-modal__header h2 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.professor-modal__header button {
+  border: 0;
+  background: transparent;
+  font-size: 1.8rem;
+  line-height: 1;
+  cursor: pointer;
+  color: #6b7280;
+}
+
+.professor-modal__form {
+  display: grid;
+  gap: 18px;
+}
+
+.professor-modal__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.professor-modal__form label {
+  display: grid;
+  gap: 8px;
+}
+
+.professor-modal__form span {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.professor-modal__form input {
+  height: 48px;
+  border: 1px solid #d1d5db;
+  border-radius: 14px;
+  padding: 0 14px;
+  font-size: 1rem;
+  outline: none;
+  background: #fff;
+}
+
+.professor-modal__form input:focus {
+  border-color: #4f46e5;
+}
+
+.professor-modal__full {
+  grid-column: 1 / -1;
+}
+
+.professor-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.professor-modal__button {
+  height: 46px;
+  border-radius: 14px;
+  border: 0;
+  padding: 0 18px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.professor-modal__button--secondary {
+  background: #eef2f7;
+  color: #111827;
+}
+
+.professor-modal__button--primary {
+  background: #0b0f2f;
+  color: #ffffff;
+}
+
+.professor-modal__button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+@media (max-width: 640px) {
+  .professor-modal {
+    padding: 20px;
+    border-radius: 20px;
+  }
+
+  .professor-modal__grid {
+    grid-template-columns: 1fr;
+  }
+}
