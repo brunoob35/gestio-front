@@ -1,0 +1,245 @@
+.gestao-alunos {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.gestao-alunos__name-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.gestao-alunos__sort-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid #dbe4ee;
+  border-radius: 999px;
+  background: #f8fbff;
+  color: #1f2937;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.gestao-alunos__sort-button:hover {
+  background: #eef6ff;
+  border-color: #bfd7f2;
+}
+
+.gestao-alunos__row {
+  cursor: pointer;
+}
+
+.gestao-alunos__row.is-selected {
+  background: #f8fbff;
+}
+
+.gestao-alunos__contact-cell {
+  display: grid;
+  gap: 6px;
+}
+
+.gestao-alunos__count-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.gestao-alunos__icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid #dbe4ee;
+  border-radius: 999px;
+  background: #f8fbff;
+  cursor: pointer;
+}
+
+.gestao-alunos__icon-button img {
+  width: 18px;
+  height: 18px;
+  opacity: 0.8;
+}
+
+.gestao-alunos__status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-transform: lowercase;
+}
+
+.gestao-alunos__status--ativo {
+  background: #030722;
+  color: #ffffff;
+}
+
+.gestao-alunos__status--inativo {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.gestao-alunos__date-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.gestao-alunos__date-cell img {
+  width: 18px;
+  height: 18px;
+  opacity: 0.68;
+}
+
+.gestao-alunos__panel-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 24px;
+  padding: 22px;
+}
+
+.gestao-alunos__collapse-header {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.gestao-alunos__collapse-header h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.gestao-alunos__collapse-header p {
+  margin-top: 6px;
+  color: #64748b;
+}
+
+.gestao-alunos__collapse-header span {
+  font-size: 1.8rem;
+  line-height: 1;
+  color: #475569;
+}
+
+.gestao-alunos__placeholder-body {
+  display: grid;
+  gap: 18px;
+  margin-top: 20px;
+}
+
+.gestao-alunos__placeholder-body p {
+  color: #64748b;
+}
+
+.gestao-alunos__class-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.gestao-alunos__class-row {
+  width: 100%;
+  border: 1px solid #dbe7f3;
+  border-radius: 18px;
+  background: #fbfdff;
+  padding: 16px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.gestao-alunos__class-row strong {
+  display: block;
+  color: #0f172a;
+}
+
+.gestao-alunos__class-row span {
+  display: block;
+  margin-top: 6px;
+  color: #64748b;
+}
+
+.gestao-alunos__class-meta {
+  min-width: 220px;
+  text-align: right;
+}
+
+.gestao-alunos__class-meta .is-active {
+  color: #15803d;
+  font-weight: 700;
+}
+
+.gestao-alunos__class-meta .is-inactive {
+  color: #b91c1c;
+  font-weight: 700;
+}
+
+.gestao-alunos__lesson-box {
+  margin: 0 8px;
+  padding: 18px;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  background: #ffffff;
+}
+
+.gestao-alunos__lesson-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.gestao-alunos__lesson-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.gestao-alunos__lesson-list li div {
+  display: grid;
+  gap: 4px;
+}
+
+.gestao-alunos__lesson-list li span {
+  color: #64748b;
+  font-size: 0.94rem;
+}
+
+@media (max-width: 992px) {
+  .gestao-alunos__class-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .gestao-alunos__class-meta {
+    min-width: 0;
+    text-align: left;
+  }
+}

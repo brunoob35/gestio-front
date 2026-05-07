@@ -1,0 +1,132 @@
+.gestao-professores td button {
+  width: 34px;
+  height: 34px;
+  border: 0;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.gestao-professores td button img {
+  width: 18px;
+  height: 18px;
+}
+
+.gestao-turmas__students-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.gestao-turmas__students-count {
+  min-width: 24px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #334155;
+}
+
+.gestao-turmas__feedback {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 18px;
+  border: 1px solid #c7d2fe;
+  border-radius: 18px;
+  background: #eef2ff;
+  color: #312e81;
+}
+
+.gestao-turmas__feedback p {
+  font-weight: 600;
+}
+
+.gestao-turmas__feedback button {
+  border: 0;
+  background: transparent;
+  color: #312e81;
+  font-size: 1.4rem;
+  cursor: pointer;
+}
+
+.gestao-turmas__row.is-expanded {
+  background: #f8fbff;
+}
+
+.gestao-turmas__details-row td {
+  padding: 0 0 20px;
+  border-bottom: 1px solid #eef2f6;
+}
+
+.gestao-turmas__details-card {
+  margin: 0 12px;
+  padding: 20px;
+  border: 1px solid #dbe7f3;
+  border-radius: 20px;
+  background: linear-gradient(180deg, #fbfdff 0%, #f3f7fb 100%);
+  display: grid;
+  gap: 20px;
+}
+
+.gestao-turmas__detail-block {
+  display: grid;
+  gap: 10px;
+}
+
+.gestao-turmas__detail-block h4 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.gestao-turmas__detail-block p {
+  color: #64748b;
+}
+
+.gestao-turmas__detail-block ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.gestao-turmas__detail-list {
+  display: grid;
+  gap: 10px;
+}
+
+.gestao-turmas__detail-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+}
+
+.gestao-turmas__detail-list li div {
+  display: grid;
+  gap: 4px;
+}
+
+.gestao-turmas__detail-list li span {
+  color: #64748b;
+  font-size: 0.94rem;
+}
+
+.gestao-turmas__status-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: #dbeafe;
+  color: #1d4ed8;
+  font-size: 0.88rem;
+  font-weight: 700;
+  text-transform: capitalize;
+}

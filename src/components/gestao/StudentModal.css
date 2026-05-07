@@ -1,0 +1,177 @@
+.student-modal__backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(17, 24, 39, 0.42);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 1000;
+}
+
+.student-modal {
+  width: 100%;
+  max-width: 1024px;
+  background: #ffffff;
+  border-radius: 28px;
+  padding: 28px;
+  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.22);
+}
+
+.student-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.student-modal__header h2 {
+  font-size: 1.9rem;
+  color: #111827;
+}
+
+.student-modal__header button {
+  border: 0;
+  background: transparent;
+  font-size: 2rem;
+  line-height: 1;
+  cursor: pointer;
+  color: #6b7280;
+}
+
+.student-modal__tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  background: #e8e9f0;
+  border-radius: 999px;
+  padding: 6px;
+  margin-top: 24px;
+}
+
+.student-modal__tabs button {
+  height: 54px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: #111827;
+  font-size: 1.05rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.student-modal__tabs button.is-active {
+  background: #ffffff;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
+}
+
+.student-modal__form {
+  display: grid;
+  gap: 22px;
+  margin-top: 20px;
+}
+
+.student-modal__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px 28px;
+}
+
+.student-modal__grid label {
+  display: grid;
+  gap: 10px;
+}
+
+.student-modal__grid span {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.student-modal__grid input,
+.student-modal__grid textarea {
+  min-height: 74px;
+  border: 0;
+  border-radius: 18px;
+  background: #f3f4f8;
+  padding: 0 20px;
+  font-size: 1rem;
+  color: #111827;
+}
+
+.student-modal__grid input:disabled,
+.student-modal__grid textarea:disabled {
+  color: #6b7280;
+}
+
+.student-modal__full {
+  grid-column: 1 / -1;
+}
+
+.student-modal__placeholder {
+  min-height: 320px;
+  border: 1px dashed #d1d5db;
+  border-radius: 20px;
+  padding: 24px;
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  background: #fafafa;
+}
+
+.student-modal__placeholder h3 {
+  font-size: 1.4rem;
+  color: #111827;
+}
+
+.student-modal__placeholder p {
+  color: #64748b;
+  max-width: 560px;
+}
+
+.student-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+}
+
+.student-modal__button {
+  height: 72px;
+  border-radius: 18px;
+  border: 0;
+  padding: 0 30px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.student-modal__button--secondary {
+  background: #ffffff;
+  color: #111827;
+  border: 1px solid #d1d5db;
+}
+
+.student-modal__button--primary {
+  background: #04071f;
+  color: #ffffff;
+}
+
+@media (max-width: 768px) {
+  .student-modal {
+    padding: 20px;
+    border-radius: 22px;
+  }
+
+  .student-modal__tabs {
+    grid-template-columns: 1fr;
+    border-radius: 24px;
+  }
+
+  .student-modal__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .student-modal__actions {
+    flex-direction: column;
+  }
+}

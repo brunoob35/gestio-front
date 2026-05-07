@@ -1,0 +1,166 @@
+.gestao-clientes {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.gestao-clientes__row.is-expanded {
+  background: #f8fbff;
+}
+
+.gestao-clientes__contact-cell {
+  display: grid;
+  gap: 6px;
+}
+
+.gestao-clientes__count-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.gestao-clientes__count-cell img {
+  width: 18px;
+  height: 18px;
+  opacity: 0.72;
+}
+
+.gestao-clientes__status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-transform: lowercase;
+}
+
+.gestao-clientes__status--ativo {
+  background: #030722;
+  color: #ffffff;
+}
+
+.gestao-clientes__status--inativo {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.gestao-clientes__details-row td {
+  padding: 0 0 20px;
+  border-bottom: 1px solid #eef2f6;
+}
+
+.gestao-clientes__details-card {
+  margin: 0 12px;
+  padding: 20px;
+  border: 1px solid #dbe7f3;
+  border-radius: 20px;
+  background: linear-gradient(180deg, #fbfdff 0%, #f3f7fb 100%);
+  display: grid;
+  gap: 20px;
+}
+
+.gestao-clientes__detail-block {
+  display: grid;
+  gap: 10px;
+}
+
+.gestao-clientes__detail-block h4 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.gestao-clientes__detail-block p {
+  color: #64748b;
+}
+
+.gestao-clientes__address-list,
+.gestao-clientes__student-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.gestao-clientes__address-card,
+.gestao-clientes__student-list li {
+  display: grid;
+  gap: 8px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+}
+
+.gestao-clientes__address-card {
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 18px;
+  padding: 16px 18px;
+}
+
+.gestao-clientes__address-main,
+.gestao-clientes__address-meta {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.gestao-clientes__address-main strong,
+.gestao-clientes__address-main span,
+.gestao-clientes__address-meta span {
+  overflow-wrap: anywhere;
+}
+
+.gestao-clientes__address-main strong {
+  color: #0f172a;
+  font-size: 0.98rem;
+}
+
+.gestao-clientes__address-main span,
+.gestao-clientes__address-meta span {
+  color: #64748b;
+  font-size: 0.93rem;
+}
+
+.gestao-clientes__address-cep {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 110px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: #eef6ff;
+  border: 1px solid #d9e9ff;
+  color: #1d4ed8;
+  font-size: 0.88rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.gestao-clientes__student-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.gestao-clientes__student-list span {
+  color: #64748b;
+  font-size: 0.94rem;
+}
+
+@media (max-width: 900px) {
+  .gestao-clientes__address-card {
+    grid-template-columns: 1fr;
+    align-items: flex-start;
+  }
+
+  .gestao-clientes__address-cep {
+    min-width: 0;
+  }
+}

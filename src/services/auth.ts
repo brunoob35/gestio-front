@@ -45,14 +45,6 @@ export function isAuthenticated(): boolean {
   return !isTokenExpired(token);
 }
 
-export interface JwtPayload {
-  authorized: boolean;
-  userId: number;
-  permissions: number;
-  exp: number;
-  iat: number;
-}
-
 export function clearToken() {
   localStorage.removeItem("token");
   localStorage.removeItem("permissions");

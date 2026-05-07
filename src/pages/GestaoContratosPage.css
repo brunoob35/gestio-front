@@ -1,0 +1,281 @@
+.gestao-contracts {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.gestao-contracts__feedback {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border: 1px solid #c8d6fb;
+  background: #f4f7ff;
+  color: #22318f;
+  border-radius: 18px;
+  padding: 18px 20px;
+}
+
+.gestao-contracts__feedback button {
+  border: none;
+  background: transparent;
+  color: inherit;
+  font-size: 1.4rem;
+  cursor: pointer;
+}
+
+.gestao-contracts__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.gestao-contracts__header h2 {
+  margin: 0;
+  font-size: 2.15rem;
+  color: #111827;
+}
+
+.gestao-contracts__header p {
+  margin: 8px 0 0;
+  color: #60708f;
+}
+
+.gestao-contracts__header-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.gestao-contracts__primary-button,
+.gestao-contracts__secondary-button {
+  min-height: 52px;
+  padding: 0 20px;
+  border-radius: 14px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.gestao-contracts__primary-button {
+  border: none;
+  background: #050824;
+  color: #fff;
+}
+
+.gestao-contracts__secondary-button {
+  border: 1px solid #d6dbe8;
+  background: #fff;
+  color: #111827;
+}
+
+.gestao-contracts__secondary-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.gestao-contracts__search-card,
+.gestao-contracts__table-card,
+.gestao-contracts__summary-card {
+  background: #fff;
+  border: 1px solid #e8edf6;
+  border-radius: 24px;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.04);
+}
+
+.gestao-contracts__search-card {
+  padding: 24px;
+}
+
+.gestao-contracts__search-card input {
+  width: 100%;
+  min-height: 56px;
+  border: 1px solid #d9e1ef;
+  border-radius: 16px;
+  padding: 0 18px;
+  font-size: 1rem;
+  background: #f9fbff;
+}
+
+.gestao-contracts__summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.gestao-contracts__summary-card {
+  padding: 26px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.gestao-contracts__summary-card span {
+  display: block;
+  color: #60708f;
+}
+
+.gestao-contracts__summary-card strong {
+  display: block;
+  margin-top: 10px;
+  font-size: 2rem;
+  color: #111827;
+}
+
+.gestao-contracts__summary-icon {
+  width: 54px;
+  height: 54px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.gestao-contracts__summary-icon img {
+  width: 24px;
+  height: 24px;
+}
+
+.gestao-contracts__summary-icon.is-active {
+  background: #dffbe8;
+}
+
+.gestao-contracts__summary-icon.is-active img {
+  filter: invert(46%) sepia(57%) saturate(781%) hue-rotate(95deg) brightness(95%) contrast(89%);
+}
+
+.gestao-contracts__summary-icon.is-pending {
+  background: #fff1b8;
+}
+
+.gestao-contracts__summary-icon.is-pending img {
+  filter: invert(67%) sepia(99%) saturate(1164%) hue-rotate(360deg) brightness(100%) contrast(92%);
+}
+
+.gestao-contracts__summary-icon.is-expired {
+  background: #ffe0e4;
+}
+
+.gestao-contracts__summary-icon.is-expired img {
+  filter: invert(24%) sepia(84%) saturate(5070%) hue-rotate(339deg) brightness(100%) contrast(84%);
+}
+
+.gestao-contracts__table-card {
+  padding: 24px;
+}
+
+.gestao-contracts__table-header h3 {
+  margin: 0;
+  font-size: 1.55rem;
+  color: #111827;
+}
+
+.gestao-contracts__table-wrapper {
+  overflow-x: auto;
+  margin-top: 20px;
+}
+
+.gestao-contracts__table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 980px;
+}
+
+.gestao-contracts__table th,
+.gestao-contracts__table td {
+  padding: 18px 10px;
+  text-align: left;
+  border-bottom: 1px solid #edf1f7;
+  vertical-align: middle;
+}
+
+.gestao-contracts__table th {
+  color: #111827;
+  font-size: 0.96rem;
+}
+
+.gestao-contracts__table td {
+  color: #374151;
+}
+
+.gestao-contracts__status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.gestao-contracts__status.is-active {
+  background: #0b1029;
+  color: #fff;
+}
+
+.gestao-contracts__status.is-pending {
+  background: #fff;
+  color: #111827;
+  border: 1px solid #d5dae6;
+}
+
+.gestao-contracts__status.is-expired {
+  background: #e11d48;
+  color: #fff;
+}
+
+.gestao-contracts__status.is-warning {
+  background: #fff3bf;
+  color: #8a5a00;
+}
+
+.gestao-contracts__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.gestao-contracts__icon-button {
+  width: 38px;
+  height: 38px;
+  border: 1px solid #d7deeb;
+  border-radius: 12px;
+  background: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.gestao-contracts__icon-button img {
+  width: 18px;
+  height: 18px;
+}
+
+.gestao-contracts__icon-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.gestao-contracts__empty {
+  padding: 42px 20px;
+  text-align: center;
+  color: #60708f;
+}
+
+@media (max-width: 980px) {
+  .gestao-contracts__header {
+    flex-direction: column;
+  }
+
+  .gestao-contracts__header-actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .gestao-contracts__summary {
+    grid-template-columns: 1fr;
+  }
+}
