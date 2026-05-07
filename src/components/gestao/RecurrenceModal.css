@@ -1,0 +1,159 @@
+.recurrence-modal__backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(17, 24, 39, 0.42);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 1100;
+}
+
+.recurrence-modal {
+  width: 100%;
+  max-width: 420px;
+  background: #27292d;
+  color: #f3f4f6;
+  border-radius: 28px;
+  padding: 24px;
+  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.35);
+}
+
+.recurrence-modal__header h2 {
+  font-size: 2rem;
+  font-weight: 400;
+  letter-spacing: -0.03em;
+}
+
+.recurrence-modal__body {
+  display: grid;
+  gap: 22px;
+  margin-top: 24px;
+}
+
+.recurrence-modal__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 140px;
+  gap: 12px;
+  align-items: end;
+}
+
+.recurrence-modal__row label,
+.recurrence-modal__grid label {
+  display: grid;
+  gap: 8px;
+}
+
+.recurrence-modal__row span,
+.recurrence-modal__section span,
+.recurrence-modal__grid span {
+  color: #d1d5db;
+  font-size: 0.95rem;
+}
+
+.recurrence-modal__row input,
+.recurrence-modal__grid input {
+  height: 46px;
+  border: 0;
+  border-radius: 10px;
+  background: #35383d;
+  color: #f9fafb;
+  padding: 0 14px;
+  font-size: 1rem;
+}
+
+.recurrence-modal__static-field {
+  height: 46px;
+  border-radius: 10px;
+  background: #35383d;
+  color: #f9fafb;
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+}
+
+.recurrence-modal__section {
+  display: grid;
+  gap: 12px;
+}
+
+.recurrence-modal__weekdays {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.recurrence-modal__weekday {
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  border: 0;
+  background: #3a3d42;
+  color: #d1d5db;
+  cursor: pointer;
+}
+
+.recurrence-modal__weekday.is-active {
+  background: #8ab4f8;
+  color: #111827;
+  font-weight: 700;
+}
+
+.recurrence-modal__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.recurrence-modal__full {
+  grid-column: 1 / -1;
+}
+
+.recurrence-modal__preview {
+  color: #bfdbfe;
+  line-height: 1.5;
+  font-size: 0.95rem;
+}
+
+.recurrence-modal__error {
+  color: #fca5a5;
+  font-size: 0.95rem;
+}
+
+.recurrence-modal__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+  margin-top: 28px;
+}
+
+.recurrence-modal__link {
+  border: 0;
+  background: transparent;
+  color: #c7d2fe;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.recurrence-modal__primary {
+  height: 48px;
+  border: 0;
+  border-radius: 999px;
+  background: #8ab4f8;
+  color: #0f172a;
+  padding: 0 24px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+@media (max-width: 640px) {
+  .recurrence-modal {
+    padding: 20px;
+  }
+
+  .recurrence-modal__row,
+  .recurrence-modal__grid {
+    grid-template-columns: 1fr;
+  }
+}

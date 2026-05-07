@@ -1,0 +1,188 @@
+.class-modal__backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(17, 24, 39, 0.42);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 1000;
+}
+
+.class-modal {
+  width: 100%;
+  max-width: 760px;
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 24px;
+  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.22);
+}
+
+.class-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.class-modal__header h2 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.class-modal__header button {
+  border: 0;
+  background: transparent;
+  font-size: 1.8rem;
+  line-height: 1;
+  cursor: pointer;
+  color: #6b7280;
+}
+
+.class-modal__form {
+  display: grid;
+  gap: 18px;
+}
+
+.class-modal__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.class-modal__form label {
+  display: grid;
+  gap: 8px;
+}
+
+.class-modal__form span {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.class-modal__form input,
+.class-modal__form select {
+  border: 1px solid #d1d5db;
+  border-radius: 14px;
+  padding: 0 14px;
+  font-size: 1rem;
+  outline: none;
+  background: #fff;
+}
+
+.class-modal__form input,
+.class-modal__form select {
+  height: 48px;
+}
+
+.class-modal__form input:focus,
+.class-modal__form select:focus {
+  border-color: #4f46e5;
+}
+
+.class-modal__full {
+  grid-column: 1 / -1;
+}
+
+.class-modal__recurrence-card {
+  display: grid;
+  gap: 18px;
+  border: 1px solid #dbe3f1;
+  border-radius: 18px;
+  padding: 18px;
+  background: #f8fafc;
+}
+
+.class-modal__recurrence-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.class-modal__recurrence-card p {
+  margin-top: 8px;
+  color: #475569;
+  line-height: 1.5;
+}
+
+.class-modal__weekday-list {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.class-modal__weekday {
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  border: 0;
+  background: #e5e7eb;
+  color: #475569;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.class-modal__weekday.is-active {
+  background: #0b0f2f;
+  color: #ffffff;
+}
+
+.class-modal__recurrence-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.class-modal__error {
+  color: #b91c1c;
+  font-size: 0.95rem;
+}
+
+.class-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.class-modal__button {
+  height: 46px;
+  border-radius: 14px;
+  border: 0;
+  padding: 0 18px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.class-modal__button--secondary {
+  background: #eef2f7;
+  color: #111827;
+}
+
+.class-modal__button--primary {
+  background: #0b0f2f;
+  color: #ffffff;
+}
+
+.class-modal__button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+@media (max-width: 640px) {
+  .class-modal {
+    padding: 20px;
+    border-radius: 20px;
+  }
+
+  .class-modal__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .class-modal__recurrence-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -7,6 +7,10 @@ import ResetPasswordPage from "../pages/ResetPasswordPage";
 import GestaoHomePage from "../pages/GestaoHomePage";
 import GestaoProfessoresPage from "../pages/GestaoProfessoresPage";
 import GestaoProfessorViewPage from "../pages/GestaoProfessorViewPage";
+import GestaoTurmasPage from "../pages/GestaoTurmasPage";
+import GestaoAlunosPage from "../pages/GestaoAlunosPage";
+import GestaoClientesPage from "../pages/GestaoClientesPage";
+import GestaoContratosPage from "../pages/GestaoContratosPage";
 
 import { getUserPermissions, isAuthenticated } from "../services/auth";
 
@@ -16,10 +20,10 @@ function ProfessorHomePage() {
 
 function PrivateRoute({
   children,
-  allowedPermission,
+  allowedPermissions,
 }: {
   children: JSX.Element;
-  allowedPermission: number;
+  allowedPermissions: number[];
 }) {
   const authenticated = isAuthenticated();
   const permission = getUserPermissions();
@@ -28,7 +32,7 @@ function PrivateRoute({
     return <Navigate to="/" replace />;
   }
 
-  if (permission !== allowedPermission) {
+  if (!permission || !allowedPermissions.includes(permission)) {
     if (permission === 1 || permission === 4) {
       return <Navigate to="/gestao" replace />;
     }
@@ -67,7 +71,7 @@ export function AppRoutes() {
       <Route
         path="/gestao"
         element={
-          <PrivateRoute allowedPermission={1}>
+          <PrivateRoute allowedPermissions={[1, 4]}>
             <GestaoHomePage />
           </PrivateRoute>
         }
@@ -76,7 +80,7 @@ export function AppRoutes() {
       <Route
         path="/gestao/professores"
         element={
-          <PrivateRoute allowedPermission={1}>
+          <PrivateRoute allowedPermissions={[1, 4]}>
             <GestaoProfessoresPage />
           </PrivateRoute>
         }
@@ -85,7 +89,7 @@ export function AppRoutes() {
       <Route
         path="/gestao/professores/:professorID"
         element={
-          <PrivateRoute allowedPermission={1}>
+          <PrivateRoute allowedPermissions={[1, 4]}>
             <GestaoProfessorViewPage />
           </PrivateRoute>
         }
@@ -94,8 +98,44 @@ export function AppRoutes() {
       <Route
         path="/professor"
         element={
-          <PrivateRoute allowedPermission={2}>
+          <PrivateRoute allowedPermissions={[2]}>
             <ProfessorHomePage />
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/gestao/alunos"
+        element={
+          <PrivateRoute allowedPermissions={[1, 4]}>
+            <GestaoAlunosPage />
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/gestao/clientes"
+        element={
+          <PrivateRoute allowedPermissions={[1, 4]}>
+            <GestaoClientesPage />
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/gestao/turmas"
+        element={
+          <PrivateRoute allowedPermissions={[1, 4]}>
+            <GestaoTurmasPage />
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/gestao/contratos"
+        element={
+          <PrivateRoute allowedPermissions={[1, 4]}>
+            <GestaoContratosPage />
           </PrivateRoute>
         }
       />

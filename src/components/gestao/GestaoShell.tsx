@@ -7,6 +7,7 @@ import barsIcon from "../../assets/icons/bars-svgrepo-com.svg";
 import dashboardIcon from "../../assets/icons/dashboard-svgrepo-com.svg";
 import bookOpenIcon from "../../assets/icons/book-open-svgrepo-com.svg";
 import userGroupIcon from "../../assets/icons/user-group-svgrepo-com.svg";
+import userCircleIcon from "../../assets/icons/user-circle-svgrepo-com.svg";
 import studentIcon from "../../assets/icons/student-svgrepo-com.svg";
 import fileAltIcon from "../../assets/icons/file-alt-svgrepo-com.svg";
 import calendarIcon from "../../assets/icons/calendar-check-svgrepo-com.svg";
@@ -60,6 +61,12 @@ export default function GestaoShell({ title, children }: GestaoShellProps) {
         label: "Alunos",
         icon: userGroupIcon,
         path: "/gestao/alunos",
+      },
+      {
+        key: "clientes",
+        label: "Clientes",
+        icon: userCircleIcon,
+        path: "/gestao/clientes",
       },
       {
         key: "turmas",

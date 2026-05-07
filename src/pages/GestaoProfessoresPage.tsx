@@ -9,11 +9,10 @@ import ProfessorModal, {
 import {
   createProfessor,
   deleteProfessor,
-  fetchProfessorClassesCount,
-  fetchProfessors,
   type ProfessorRow,
   updateProfessor,
 } from "../services/professors";
+import { useGestaoData } from "../context/GestaoDataContext";
 
 import bookOpenIcon from "../assets/icons/book-open-svgrepo-com.svg";
 import eyeIcon from "../assets/icons/eye-show-svgrepo-com.svg";
@@ -24,46 +23,39 @@ import "./GestaoProfessoresPage.css";
 
 export default function GestaoProfessoresPage() {
   const navigate = useNavigate();
-
-  const [professors, setProfessors] = useState<ProfessorRow[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
 
   const [createOpen, setCreateOpen] = useState(false);
   const [editingProfessor, setEditingProfessor] = useState<ProfessorRow | null>(null);
+  const {
+    professors,
+    hasLoadedProfessors,
+    loadProfessors,
+    upsertProfessor,
+    removeProfessor,
+  } = useGestaoData();
 
   async function loadData() {
-    setLoading(true);
-
     try {
-      const baseProfessors = await fetchProfessors();
-      const ids = baseProfessors.map((item) => item.id);
-
-      let counts: Record<number, number> = {};
-
-      try {
-        counts = await fetchProfessorClassesCount(ids);
-      } catch (error) {
-        console.error("Erro ao carregar contagem de turmas:", error);
-      }
-
-      const merged = baseProfessors.map((item) => ({
-        ...item,
-        turmasAtivas: counts[item.id] ?? 0,
-      }));
-
-      setProfessors(merged);
+      await loadProfessors();
     } catch (error) {
       console.error("Erro ao carregar professores:", error);
-      setProfessors([]);
     } finally {
       setLoading(false);
     }
   }
 
   useEffect(() => {
-    loadData();
-  }, []);
+    if (hasLoadedProfessors) {
+      setLoading(false);
+      void loadProfessors();
+      return;
+    }
+
+    setLoading(true);
+    void loadData();
+  }, [hasLoadedProfessors]);
 
   const filteredProfessors = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -79,7 +71,7 @@ export default function GestaoProfessoresPage() {
   }, [professors, search]);
 
   async function handleCreate(values: ProfessorFormValues) {
-    await createProfessor({
+    const createdProfessor = await createProfessor({
       nome: values.nome,
       email: values.email,
       senha: values.senha,
@@ -90,7 +82,18 @@ export default function GestaoProfessoresPage() {
       nascimento: `${values.nascimento}T00:00:00Z`,
     });
 
-    await loadData();
+    upsertProfessor({
+      id: createdProfessor.id,
+      code: `P${String(createdProfessor.id).padStart(3, "0")}`,
+      nome: values.nome,
+      email: values.email,
+      telefone: values.telefone,
+      cpf: values.cpf,
+      rg: values.rg,
+      nascimento: `${values.nascimento}T00:00:00Z`,
+      turmasAtivas: 0,
+      status: "ativo",
+    });
   }
 
   async function handleEdit(values: ProfessorFormValues) {
@@ -108,8 +111,16 @@ export default function GestaoProfessoresPage() {
       ...(values.senha ? { senha: values.senha } : {}),
     });
 
+    upsertProfessor({
+      ...editingProfessor,
+      nome: values.nome,
+      email: values.email,
+      telefone: values.telefone,
+      cpf: values.cpf,
+      rg: values.rg,
+      nascimento: values.nascimento ? `${values.nascimento}T00:00:00Z` : editingProfessor.nascimento,
+    });
     setEditingProfessor(null);
-    await loadData();
   }
 
   async function handleDelete(professor: ProfessorRow) {
@@ -120,7 +131,7 @@ export default function GestaoProfessoresPage() {
     if (!confirmed) return;
 
     await deleteProfessor(professor.id);
-    await loadData();
+    removeProfessor(professor.id);
   }
 
   function handleViewProfessor(professor: ProfessorRow) {

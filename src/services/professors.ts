@@ -107,6 +107,12 @@ export async function fetchProfessors() {
   return data.map(normalizeProfessor);
 }
 
+export async function fetchAllProfessors() {
+  const response = await api.get("/professors/all");
+  const data = Array.isArray(response.data) ? response.data : [];
+  return data.map(normalizeProfessor);
+}
+
 export async function fetchProfessorClassesCount(professorIds: number[]) {
   if (!professorIds.length) return {};
 

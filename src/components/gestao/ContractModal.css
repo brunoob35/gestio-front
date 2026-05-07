@@ -1,0 +1,181 @@
+.contract-modal__backdrop {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(3px);
+  z-index: 40;
+  padding: 24px;
+}
+
+.contract-modal {
+  width: min(980px, 100%);
+  max-height: calc(100vh - 48px);
+  overflow: auto;
+  background: #fff;
+  border-radius: 28px;
+  padding: 28px;
+  box-shadow: 0 28px 60px rgba(15, 23, 42, 0.2);
+}
+
+.contract-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.contract-modal__header h2 {
+  margin: 0;
+  font-size: 2rem;
+  color: #111827;
+}
+
+.contract-modal__header button {
+  border: none;
+  background: transparent;
+  font-size: 2rem;
+  color: #6b7280;
+  cursor: pointer;
+}
+
+.contract-modal__tabs {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #edf2fb;
+  border-radius: 999px;
+  padding: 6px;
+  margin-top: 20px;
+}
+
+.contract-modal__tabs button,
+.contract-modal__mode-switch button {
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: #42526b;
+  font-size: 0.95rem;
+  font-weight: 700;
+  padding: 12px 18px;
+  cursor: pointer;
+}
+
+.contract-modal__tabs button.is-active,
+.contract-modal__mode-switch button.is-active {
+  background: #fff;
+  color: #111827;
+  box-shadow: 0 6px 18px rgba(80, 103, 164, 0.18);
+}
+
+.contract-modal__form {
+  margin-top: 22px;
+}
+
+.contract-modal__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px 20px;
+}
+
+.contract-modal__grid label,
+.contract-modal__section label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.contract-modal__grid span,
+.contract-modal__section span {
+  font-size: 0.95rem;
+}
+
+.contract-modal__grid input,
+.contract-modal__grid select,
+.contract-modal__section input {
+  width: 100%;
+  min-height: 52px;
+  border: 1px solid #d7dfef;
+  border-radius: 16px;
+  padding: 0 16px;
+  font-size: 1rem;
+  color: #111827;
+  background: #f9fbff;
+}
+
+.contract-modal__full {
+  grid-column: 1 / -1;
+}
+
+.contract-modal__section {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.contract-modal__mode-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #edf2fb;
+  border-radius: 999px;
+  padding: 6px;
+  align-self: flex-start;
+}
+
+.contract-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.contract-modal__button {
+  min-width: 180px;
+  min-height: 52px;
+  border-radius: 16px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.contract-modal__button--secondary {
+  border: 1px solid #d3d9e6;
+  background: #fff;
+  color: #111827;
+}
+
+.contract-modal__button--primary {
+  border: none;
+  background: #050824;
+  color: #fff;
+}
+
+.contract-modal__button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+@media (max-width: 720px) {
+  .contract-modal {
+    padding: 20px;
+    border-radius: 22px;
+  }
+
+  .contract-modal__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .contract-modal__actions {
+    flex-direction: column-reverse;
+  }
+
+  .contract-modal__button {
+    width: 100%;
+    min-width: 0;
+  }
+}
