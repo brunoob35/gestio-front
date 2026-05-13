@@ -6,6 +6,9 @@
 /opt/gestio/
   docker-compose.yml
   .env
+  certbot/
+    conf/
+    www/
   nginx/
     default.conf
   frontend/
@@ -27,6 +30,52 @@
 cd /opt/gestio
 docker compose pull
 docker compose up -d
+```
+
+## Ativando HTTPS
+
+Depois que `gestioonline.com` e `www.gestioonline.com` estiverem apontando para a VPS:
+
+1. criar as pastas do Let's Encrypt:
+
+```bash
+mkdir -p /opt/gestio/certbot/conf
+mkdir -p /opt/gestio/certbot/www
+```
+
+2. parar temporariamente o `nginx`:
+
+```bash
+cd /opt/gestio
+docker compose stop nginx
+```
+
+3. emitir o certificado:
+
+```bash
+docker run --rm -p 80:80 \
+  -v /opt/gestio/certbot/conf:/etc/letsencrypt \
+  certbot/certbot certonly --standalone \
+  -d gestioonline.com -d www.gestioonline.com \
+  --agree-tos \
+  -m noreplygestio@gmail.com \
+  --no-eff-email
+```
+
+4. atualizar na VPS os arquivos `docker-compose.yml` e `nginx/default.conf` com a versão mais recente do repositório
+
+5. subir novamente o `nginx`:
+
+```bash
+cd /opt/gestio
+docker compose up -d nginx
+```
+
+6. testar:
+
+```bash
+curl -I https://gestioonline.com
+curl -I https://www.gestioonline.com
 ```
 
 ## Observações
