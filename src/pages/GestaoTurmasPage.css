@@ -27,6 +27,22 @@
   color: #334155;
 }
 
+.gestao-turmas__lesson-summary {
+  display: grid;
+  gap: 2px;
+}
+
+.gestao-turmas__lesson-summary strong {
+  color: #0f172a;
+  font-size: 1rem;
+}
+
+.gestao-turmas__lesson-summary span {
+  color: #64748b;
+  font-size: 0.88rem;
+  white-space: nowrap;
+}
+
 .gestao-turmas__feedback {
   display: flex;
   align-items: center;
@@ -49,6 +65,16 @@
   color: #312e81;
   font-size: 1.4rem;
   cursor: pointer;
+}
+
+.gestao-turmas__order-select {
+  height: 46px;
+  border: 1px solid #dbe4ee;
+  border-radius: 14px;
+  padding: 0 14px;
+  background: #ffffff;
+  color: #0f172a;
+  font-size: 0.95rem;
 }
 
 .gestao-turmas__row.is-expanded {
@@ -107,14 +133,34 @@
   border: 1px solid #e2e8f0;
 }
 
-.gestao-turmas__detail-list li div {
+.gestao-turmas__detail-list li span {
+  color: #64748b;
+  font-size: 0.94rem;
+}
+
+.gestao-turmas__lesson-main {
   display: grid;
   gap: 4px;
 }
 
-.gestao-turmas__detail-list li span {
+.gestao-turmas__lesson-main strong {
+  color: #0f172a;
+}
+
+.gestao-turmas__lesson-main span {
   color: #64748b;
-  font-size: 0.94rem;
+  font-size: 0.98rem;
+}
+
+.gestao-turmas__lesson-side {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+  flex-shrink: 0;
+  margin-left: auto;
+  padding-left: 16px;
 }
 
 .gestao-turmas__status-pill {
@@ -129,4 +175,69 @@
   font-size: 0.88rem;
   font-weight: 700;
   text-transform: capitalize;
+}
+
+.gestao-turmas__status-pill.is-pending {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.gestao-turmas__status-pill.is-completed {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.gestao-turmas__status-pill.is-overdue,
+.gestao-turmas__status-pill.is-cancelled {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.gestao-turmas__status-pill.is-reschedule-pending {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.gestao-turmas__status-pill.is-rescheduled {
+  background: #bfdbfe;
+  color: #1d4ed8;
+}
+
+.gestao-turmas__status-pill.is-compensated {
+  background: #fef9c3;
+  color: #a16207;
+}
+
+.gestao-turmas__lesson-action {
+  width: 36px;
+  height: 36px;
+  border: 1px solid #dbe3f1;
+  border-radius: 12px;
+  background: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+.gestao-turmas__lesson-action img {
+  width: 16px;
+  height: 16px;
+}
+
+.gestao-turmas__lesson-action:hover {
+  transform: translateY(-1px);
+  border-color: #cbd5e1;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+}
+
+.gestao-turmas__lesson-action.is-danger {
+  border-color: #fecaca;
+  background: #fff5f5;
+}
+
+.gestao-turmas__lesson-action.is-danger:hover {
+  border-color: #fca5a5;
+  box-shadow: 0 10px 24px rgba(220, 38, 38, 0.08);
 }

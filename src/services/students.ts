@@ -1,4 +1,5 @@
 import { api } from "./api";
+import { formatPhoneNumber } from "../utils/phone";
 import type { Class } from "./classes";
 
 export type StudentRow = {
@@ -39,6 +40,10 @@ function asNumber(value: unknown) {
   return 0;
 }
 
+function asBoolean(value: unknown) {
+  return value === true || value === 1 || value === "1" || value === "true";
+}
+
 function buildStudentCode(id: number) {
   return `A${String(id).padStart(3, "0")}`;
 }
@@ -56,9 +61,9 @@ export function normalizeStudent(item: RawStudent): StudentRow {
     asString(item.CreatedAt);
 
   const ativo =
-    item.ativo === true ||
-    item.active === true ||
-    item.Ativo === true;
+    asBoolean(item.ativo) ||
+    asBoolean(item.active) ||
+    asBoolean(item.Ativo);
 
   return {
     id,
@@ -68,7 +73,7 @@ export function normalizeStudent(item: RawStudent): StudentRow {
     email: "",
     telefone: "",
     responsavel: asString(item.responsavel),
-    responsavelTelefone: asString(item.responsavel_telefone),
+    responsavelTelefone: formatPhoneNumber(asString(item.responsavel_telefone)),
     classesCount: asNumber(item.classes_count),
     status: ativo ? "ativo" : "inativo",
     created_at: createdAt,

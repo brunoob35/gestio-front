@@ -6,6 +6,9 @@ export type Class = {
   name: string;
   recurrence_desc: string;
   recurrence_json: string;
+  student_count?: number;
+  lessons_total?: number;
+  lessons_completed?: number;
   created_at: string;
   updated_at?: string;
   deleted_at?: string | null;
@@ -39,6 +42,7 @@ export type AddStudentToClassResponse = {
 };
 
 type RawClassStudent = Record<string, unknown>;
+type RawClass = Record<string, unknown>;
 
 function asString(value: unknown) {
   if (typeof value === "string") return value;
@@ -59,6 +63,26 @@ function asBoolean(value: unknown) {
   return value === true || value === 1 || value === "1";
 }
 
+function normalizeClass(item: RawClass): Class {
+  return {
+    id: asNumber(item.id),
+    teacher_id: (() => {
+      const value = asNumber(item.teacher_id);
+      return value > 0 ? value : null;
+    })(),
+    name: asString(item.name),
+    recurrence_desc: asString(item.recurrence_desc),
+    recurrence_json: asString(item.recurrence_json),
+    student_count: asNumber(item.student_count),
+    lessons_total: asNumber(item.lessons_total),
+    lessons_completed: asNumber(item.lessons_completed),
+    created_at: asString(item.created_at),
+    updated_at: asString(item.updated_at) || undefined,
+    deleted_at: asString(item.deleted_at) || null,
+    generated_lessons_count: asNumber(item.generated_lessons_count) || undefined,
+  };
+}
+
 export function normalizeClassStudent(item: RawClassStudent): ClassStudent {
   return {
     id: asNumber(item.id),
@@ -72,23 +96,24 @@ export function normalizeClassStudent(item: RawClassStudent): ClassStudent {
 }
 
 export async function fetchClasses(): Promise<Class[]> {
-  const res = await api.get<Class[]>("/classes");
-  return res.data;
+  const res = await api.get("/classes");
+  const data = Array.isArray(res.data) ? res.data : [];
+  return data.map((item) => normalizeClass((item ?? {}) as RawClass));
 }
 
 export async function createClass(payload: ClassPayload): Promise<Class> {
   const res = await api.post<Class>("/classes", payload);
-  return res.data;
+  return normalizeClass((res.data ?? {}) as RawClass);
 }
 
 export async function createPrivateClassFromStudent(payload: PrivateClassPayload): Promise<Class> {
   const res = await api.post<Class>("/classes/private", payload);
-  return res.data;
+  return normalizeClass((res.data ?? {}) as RawClass);
 }
 
 export async function updateClass(id: number, payload: ClassPayload): Promise<Class> {
   const res = await api.put<Class>(`/classes/${id}`, payload);
-  return res.data;
+  return normalizeClass((res.data ?? {}) as RawClass);
 }
 
 export async function deleteClass(id: number): Promise<void> {

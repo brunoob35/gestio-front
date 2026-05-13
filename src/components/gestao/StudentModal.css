@@ -88,6 +88,10 @@
   color: #111827;
 }
 
+.student-modal__grid label.is-invalid span {
+  color: #b91c1c;
+}
+
 .student-modal__grid input,
 .student-modal__grid textarea {
   min-height: 74px;
@@ -97,6 +101,12 @@
   padding: 0 20px;
   font-size: 1rem;
   color: #111827;
+}
+
+.student-modal__grid label.is-invalid input,
+.student-modal__grid label.is-invalid textarea {
+  border: 1px solid #fca5a5;
+  background: #fff5f5;
 }
 
 .student-modal__grid input:disabled,

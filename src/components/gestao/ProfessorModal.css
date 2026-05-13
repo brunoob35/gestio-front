@@ -63,6 +63,10 @@
   color: #374151;
 }
 
+.professor-modal__form label.is-invalid span {
+  color: #b91c1c;
+}
+
 .professor-modal__form input {
   height: 48px;
   border: 1px solid #d1d5db;
@@ -71,6 +75,11 @@
   font-size: 1rem;
   outline: none;
   background: #fff;
+}
+
+.professor-modal__form label.is-invalid input {
+  border-color: #fca5a5;
+  background: #fff5f5;
 }
 
 .professor-modal__form input:focus {

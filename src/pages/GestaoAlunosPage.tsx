@@ -6,6 +6,7 @@ import StudentModal, {
 import ClassModal, {
   type ClassFormValues,
 } from "../components/gestao/ClassModal";
+import LessonEditorModal from "../components/gestao/LessonEditorModal";
 import { useGestaoData } from "../context/GestaoDataContext";
 import {
   createStudent,
@@ -14,7 +15,19 @@ import {
   type StudentRow,
   updateStudent,
 } from "../services/students";
-import { fetchLessonsByClass, type Lesson } from "../services/lessons";
+import {
+  addStudentToLesson,
+  deleteLesson,
+  fetchLessonStatuses,
+  fetchLessonStudents,
+  fetchLessonsByClass,
+  type Lesson,
+  type LessonPayload,
+  type LessonStatusOption,
+  removeStudentFromLesson,
+  updateLesson,
+  updateLessonStatus,
+} from "../services/lessons";
 import {
   createPrivateClassFromStudent,
   type Class,
@@ -23,7 +36,8 @@ import calendarIcon from "../assets/icons/calendar-check-svgrepo-com.svg";
 import pencilIcon from "../assets/icons/pencil-svgrepo-com.svg";
 import trashIcon from "../assets/icons/trash-alt-svgrepo-com.svg";
 import eyeIcon from "../assets/icons/eye-show-svgrepo-com.svg";
-import studentIcon from "../assets/icons/student-svgrepo-com.svg";
+import bookOpenIcon from "../assets/icons/book-open-svgrepo-com.svg";
+import { getLessonStatusPresentation } from "../utils/lessonStatus";
 import "./GestaoAlunosPage.css";
 
 type StudentClassesState = Record<number, Class[]>;
@@ -34,8 +48,6 @@ export default function GestaoAlunosPage() {
     students,
     allProfessors,
     studentClassLinksVersion,
-    hasLoadedStudents,
-    hasLoadedAllProfessors,
     loadClasses,
     loadStudents,
     loadAllProfessors,
@@ -58,29 +70,38 @@ export default function GestaoAlunosPage() {
   const [expandedClassId, setExpandedClassId] = useState<number | null>(null);
   const [classLessons, setClassLessons] = useState<LessonState>({});
   const [lessonsLoadingClassId, setLessonsLoadingClassId] = useState<number | null>(null);
+  const [lessonStatuses, setLessonStatuses] = useState<LessonStatusOption[]>([]);
+  const [editingLesson, setEditingLesson] = useState<Lesson | null>(null);
+  const [lessonStudentsLoading, setLessonStudentsLoading] = useState(false);
+  const [lessonStudents, setLessonStudents] = useState<Record<number, StudentRow[]>>({});
 
   useEffect(() => {
+    let cancelled = false;
+
     async function load() {
+      setLoading(true);
       try {
-        await Promise.all([
+        const [, , statuses] = await Promise.all([
           loadStudents(),
           loadAllProfessors(),
+          fetchLessonStatuses(),
         ]);
+        if (!cancelled) {
+          setLessonStatuses(statuses);
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     }
 
-    if (hasLoadedStudents && hasLoadedAllProfessors) {
-      setLoading(false);
-      void loadStudents();
-      void loadAllProfessors();
-      return;
-    }
-
-    setLoading(true);
     void load();
-  }, [hasLoadedAllProfessors, hasLoadedStudents]);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [loadAllProfessors, loadStudents]);
 
   const filteredStudents = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -119,6 +140,8 @@ export default function GestaoAlunosPage() {
   const selectedStudent = useMemo(() => {
     return filteredStudents.find((student) => student.id === selectedStudentId) ?? null;
   }, [filteredStudents, selectedStudentId]);
+
+  const classesForSelectedStudent = selectedStudent ? studentClasses[selectedStudent.id] ?? [] : [];
 
   const professorNames = useMemo(() => {
     return new Map(allProfessors.map((professor) => [professor.id, professor.nome]));
@@ -231,6 +254,100 @@ export default function GestaoAlunosPage() {
     }
   }
 
+  async function refreshClassLessons(classId: number) {
+    const lessons = await fetchLessonsByClass(classId);
+    setClassLessons((current) => ({
+      ...current,
+      [classId]: lessons,
+    }));
+    return lessons;
+  }
+
+  async function handleOpenLessonEditor(classId: number, lesson: Lesson) {
+    setEditingLesson(lesson);
+    setLessonStudentsLoading(true);
+
+    try {
+      await loadStudents();
+      const linkedStudents = await fetchLessonStudents(lesson.id);
+      setLessonStudents((current) => ({
+        ...current,
+        [lesson.id]: linkedStudents,
+      }));
+      await refreshClassLessons(classId);
+    } finally {
+      setLessonStudentsLoading(false);
+    }
+  }
+
+  async function handleUpdateLessonEntry(
+    lessonId: number,
+    payload: LessonPayload,
+    statusId: number
+  ) {
+    await updateLesson(lessonId, payload);
+    await updateLessonStatus(lessonId, statusId);
+
+    setClassLessons((current) => {
+      const optimisticLessons = (current[payload.class_id] ?? []).map((lesson) =>
+        lesson.id === lessonId
+          ? {
+              ...lesson,
+              teacher_id: payload.teacher_id ?? null,
+              subject: payload.subject,
+              vocabulary: payload.vocabulary,
+              balance: payload.balance,
+              notes: payload.notes,
+              lesson_date: payload.lesson_date,
+              status_id: statusId,
+              status_name:
+                lessonStatuses.find((status) => status.id === statusId)?.nome_status ??
+                lesson.status_name,
+            }
+          : lesson
+      );
+
+      return {
+        ...current,
+        [payload.class_id]: optimisticLessons,
+      };
+    });
+
+    try {
+      await refreshClassLessons(payload.class_id);
+    } catch (error) {
+      console.error("Erro ao sincronizar aulas após edição:", error);
+    }
+  }
+
+  async function handleDeleteLessonEntry(classId: number, lessonId: number) {
+    await deleteLesson(lessonId);
+    await refreshClassLessons(classId);
+    setLessonStudents((current) => {
+      const next = { ...current };
+      delete next[lessonId];
+      return next;
+    });
+  }
+
+  async function handleAddStudentToLessonEntry(lessonId: number, studentId: number) {
+    await addStudentToLesson(lessonId, studentId);
+    const linkedStudents = await fetchLessonStudents(lessonId);
+    setLessonStudents((current) => ({
+      ...current,
+      [lessonId]: linkedStudents,
+    }));
+  }
+
+  async function handleRemoveStudentFromLessonEntry(lessonId: number, studentId: number) {
+    await removeStudentFromLesson(lessonId, studentId);
+    const linkedStudents = await fetchLessonStudents(lessonId);
+    setLessonStudents((current) => ({
+      ...current,
+      [lessonId]: linkedStudents,
+    }));
+  }
+
   function formatDate(value?: string) {
     if (!value) return "—";
     const date = new Date(value);
@@ -240,12 +357,13 @@ export default function GestaoAlunosPage() {
 
   function formatDateTime(value?: string) {
     if (!value) return "—";
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return value;
-    return new Intl.DateTimeFormat("pt-BR", {
-      dateStyle: "short",
-      timeStyle: "short",
-    }).format(date);
+    const normalized = value.replace(" ", "T");
+    const datePart = normalized.slice(0, 10);
+    const timePart = normalized.slice(11, 16);
+    const [year, month, day] = datePart.split("-");
+
+    if (!year || !month || !day || !timePart) return value;
+    return `${day}/${month}/${year}, ${timePart}`;
   }
 
   function formatAge(value?: string) {
@@ -266,8 +384,6 @@ export default function GestaoAlunosPage() {
     return age >= 0 ? `${age} anos` : "—";
   }
 
-  const classesForSelectedStudent = selectedStudent ? studentClasses[selectedStudent.id] ?? [] : [];
-
   function toggleAlphabeticalOrder() {
     setAlphabeticalOrder((current) => (current === "az" ? "za" : "az"));
   }
@@ -283,7 +399,6 @@ export default function GestaoAlunosPage() {
           <table className="gestao-professores__table">
             <thead>
               <tr>
-                <th>ID</th>
                 <th>
                   <div className="gestao-alunos__name-header">
                     <span>Nome</span>
@@ -309,13 +424,13 @@ export default function GestaoAlunosPage() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={8} className="gestao-professores__empty">
+                  <td colSpan={7} className="gestao-professores__empty">
                     Carregando alunos...
                   </td>
                 </tr>
               ) : items.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="gestao-professores__empty">
+                  <td colSpan={7} className="gestao-professores__empty">
                     {emptyMessage}
                   </td>
                 </tr>
@@ -326,7 +441,6 @@ export default function GestaoAlunosPage() {
                     className={selectedStudentId === student.id ? "gestao-alunos__row is-selected" : "gestao-alunos__row"}
                     onClick={() => setSelectedStudentId(student.id)}
                   >
-                    <td>{student.code}</td>
                     <td>{student.nome}</td>
                     <td>{formatAge(student.nascimento)}</td>
                     <td>
@@ -340,8 +454,9 @@ export default function GestaoAlunosPage() {
                             setClassSourceStudent(student);
                           }}
                           title="Criar turma a partir deste aluno"
+                          aria-label="Criar turma a partir deste aluno"
                         >
-                          <img src={studentIcon} alt="Criar turma a partir do aluno" />
+                          <img src={bookOpenIcon} alt="Criar turma a partir do aluno" />
                         </button>
                       </div>
                     </td>
@@ -364,13 +479,13 @@ export default function GestaoAlunosPage() {
                     </td>
                     <td onClick={(event) => event.stopPropagation()}>
                       <div className="gestao-professores__actions">
-                        <button type="button" onClick={() => setSelectedStudentId(student.id)}>
+                        <button type="button" onClick={() => setSelectedStudentId(student.id)} title="Ver aluno" aria-label="Ver aluno">
                           <img src={eyeIcon} alt="Ver aluno" />
                         </button>
-                        <button type="button" onClick={() => setEditingStudent(student)}>
+                        <button type="button" onClick={() => setEditingStudent(student)} title="Editar aluno" aria-label="Editar aluno">
                           <img src={pencilIcon} alt="Editar aluno" />
                         </button>
-                        <button type="button" onClick={() => handleDelete(student)}>
+                        <button type="button" onClick={() => handleDelete(student)} title="Desativar aluno" aria-label="Desativar aluno">
                           <img
                             className="gestao-professores__trash-icon"
                             src={trashIcon}
@@ -472,7 +587,11 @@ export default function GestaoAlunosPage() {
                       >
                         <div>
                           <strong>{classItem.name}</strong>
-                          <span>{classItem.recurrence_desc || "Sem recorrência informada"}</span>
+                          <span>
+                            {classItem.recurrence_desc || "Sem recorrência informada"}
+                            {" · "}
+                            {`${classItem.lessons_completed ?? 0}/${classItem.lessons_total ?? 0} aulas`}
+                          </span>
                         </div>
                         <div className="gestao-alunos__class-meta">
                           <span>
@@ -494,7 +613,7 @@ export default function GestaoAlunosPage() {
                             <ul className="gestao-alunos__lesson-list">
                               {lessons.map((lesson) => (
                                 <li key={lesson.id}>
-                                  <div>
+                                  <div className="gestao-alunos__lesson-main">
                                     <strong>{formatDateTime(lesson.lesson_date)}</strong>
                                     <span>
                                       {lesson.subject?.trim()
@@ -502,9 +621,40 @@ export default function GestaoAlunosPage() {
                                         : "Assunto ainda não definido"}
                                     </span>
                                   </div>
-                                  <span className="gestao-turmas__status-pill">
-                                    {lesson.status_name ?? `Status ${lesson.status_id}`}
-                                  </span>
+                                  {(() => {
+                                    const status = getLessonStatusPresentation(lesson);
+                                    return (
+                                      <div className="gestao-alunos__lesson-side">
+                                        <span className={`gestao-turmas__status-pill is-${status.tone}`}>
+                                          {status.label}
+                                        </span>
+                                        <button
+                                          type="button"
+                                          className="gestao-alunos__lesson-action"
+                                          title="Editar aula"
+                                          aria-label="Editar aula"
+                                          onClick={(event) => {
+                                            event.stopPropagation();
+                                            void handleOpenLessonEditor(classItem.id, lesson);
+                                          }}
+                                        >
+                                          <img src={pencilIcon} alt="Editar aula" />
+                                        </button>
+                                        <button
+                                          type="button"
+                                          className="gestao-alunos__lesson-action is-danger"
+                                          title="Excluir aula"
+                                          aria-label="Excluir aula"
+                                          onClick={(event) => {
+                                            event.stopPropagation();
+                                            void handleDeleteLessonEntry(classItem.id, lesson.id);
+                                          }}
+                                        >
+                                          <img src={trashIcon} alt="Excluir aula" />
+                                        </button>
+                                      </div>
+                                    );
+                                  })()}
                                 </li>
                               ))}
                             </ul>
@@ -565,6 +715,25 @@ export default function GestaoAlunosPage() {
           }
           onClose={() => setClassSourceStudent(null)}
           onSubmit={handleCreateClassFromStudent}
+        />
+
+        <LessonEditorModal
+          open={Boolean(editingLesson)}
+          lesson={editingLesson}
+          professors={allProfessors}
+          lessonStatuses={lessonStatuses}
+          allStudents={students}
+          linkedStudents={editingLesson ? lessonStudents[editingLesson.id] ?? [] : []}
+          loadingStudents={lessonStudentsLoading}
+          onClose={() => setEditingLesson(null)}
+          onSave={async (lessonId, payload, statusId) => {
+            await handleUpdateLessonEntry(lessonId, payload, statusId);
+            const refreshedLessons = await fetchLessonsByClass(payload.class_id);
+            const refreshedLesson = refreshedLessons.find((item) => item.id === lessonId) ?? null;
+            setEditingLesson(refreshedLesson);
+          }}
+          onAddStudent={handleAddStudentToLessonEntry}
+          onRemoveStudent={handleRemoveStudentFromLessonEntry}
         />
       </section>
     </GestaoShell>

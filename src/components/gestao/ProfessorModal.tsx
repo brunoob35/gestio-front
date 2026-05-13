@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { formatPhoneNumber } from "../../utils/phone";
 import "./ProfessorModal.css";
 
 export type ProfessorFormValues = {
@@ -15,6 +16,7 @@ type ProfessorModalProps = {
   open: boolean;
   mode: "create" | "edit";
   initialValues?: Partial<ProfessorFormValues>;
+  entityLabel?: string;
   onClose: () => void;
   onSubmit: (values: ProfessorFormValues) => Promise<void>;
 };
@@ -33,11 +35,13 @@ export default function ProfessorModal({
   open,
   mode,
   initialValues,
+  entityLabel = "Professor",
   onClose,
   onSubmit,
 }: ProfessorModalProps) {
   const [form, setForm] = useState<ProfessorFormValues>(initialForm);
   const [loading, setLoading] = useState(false);
+  const [submitAttempted, setSubmitAttempted] = useState(false);
 
   useEffect(() => {
     if (!open) return;
@@ -51,6 +55,7 @@ export default function ProfessorModal({
       rg: initialValues?.rg ?? "",
       nascimento: initialValues?.nascimento ?? "",
     });
+    setSubmitAttempted(false);
   }, [open, initialValues]);
 
   if (!open) return null;
@@ -59,12 +64,28 @@ export default function ProfessorModal({
     const { name, value } = e.target;
     setForm((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: name === "telefone" ? formatPhoneNumber(value) : value,
     }));
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setSubmitAttempted(true);
+
+    const missingRequiredField =
+      !form.nome.trim() ||
+      !form.email.trim() ||
+      !form.telefone.trim() ||
+      (mode === "create" &&
+        (!form.cpf.trim() ||
+          !form.rg.trim() ||
+          !form.nascimento.trim() ||
+          !form.senha.trim()));
+
+    if (missingRequiredField) {
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -82,17 +103,17 @@ export default function ProfessorModal({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="professor-modal__header">
-          <h2>{mode === "create" ? "Novo Professor" : "Editar Professor"}</h2>
+          <h2>{mode === "create" ? `Novo ${entityLabel}` : `Editar ${entityLabel}`}</h2>
 
-          <button type="button" onClick={onClose} aria-label="Fechar modal">
+          <button type="button" onClick={onClose} aria-label="Fechar modal" title="Fechar modal">
             ×
           </button>
         </div>
 
-        <form className="professor-modal__form" onSubmit={handleSubmit}>
+        <form className="professor-modal__form" onSubmit={handleSubmit} noValidate>
           <div className="professor-modal__grid">
-            <label>
-              <span>Nome</span>
+            <label className={submitAttempted && !form.nome.trim() ? "is-invalid" : ""}>
+              <span>Nome *</span>
               <input
                 name="nome"
                 value={form.nome}
@@ -101,8 +122,8 @@ export default function ProfessorModal({
               />
             </label>
 
-            <label>
-              <span>E-mail</span>
+            <label className={submitAttempted && !form.email.trim() ? "is-invalid" : ""}>
+              <span>E-mail *</span>
               <input
                 name="email"
                 type="email"
@@ -112,8 +133,8 @@ export default function ProfessorModal({
               />
             </label>
 
-            <label>
-              <span>Telefone</span>
+            <label className={submitAttempted && !form.telefone.trim() ? "is-invalid" : ""}>
+              <span>Telefone *</span>
               <input
                 name="telefone"
                 value={form.telefone}
@@ -122,8 +143,8 @@ export default function ProfessorModal({
               />
             </label>
 
-            <label>
-              <span>CPF</span>
+            <label className={submitAttempted && mode === "create" && !form.cpf.trim() ? "is-invalid" : ""}>
+              <span>CPF {mode === "create" ? "*" : ""}</span>
               <input
                 name="cpf"
                 value={form.cpf}
@@ -132,8 +153,8 @@ export default function ProfessorModal({
               />
             </label>
 
-            <label>
-              <span>RG</span>
+            <label className={submitAttempted && mode === "create" && !form.rg.trim() ? "is-invalid" : ""}>
+              <span>RG {mode === "create" ? "*" : ""}</span>
               <input
                 name="rg"
                 value={form.rg}
@@ -142,8 +163,8 @@ export default function ProfessorModal({
               />
             </label>
 
-            <label>
-              <span>Data de nascimento</span>
+            <label className={submitAttempted && mode === "create" && !form.nascimento.trim() ? "is-invalid" : ""}>
+              <span>Data de nascimento {mode === "create" ? "*" : ""}</span>
               <input
                 name="nascimento"
                 type="date"
@@ -153,9 +174,9 @@ export default function ProfessorModal({
               />
             </label>
 
-            <label className="professor-modal__full">
+            <label className={`professor-modal__full ${submitAttempted && mode === "create" && !form.senha.trim() ? "is-invalid" : ""}`}>
               <span>
-                {mode === "create" ? "Senha" : "Nova senha (opcional)"}
+                {mode === "create" ? "Senha *" : "Nova senha (opcional)"}
               </span>
               <input
                 name="senha"
@@ -184,7 +205,7 @@ export default function ProfessorModal({
               {loading
                 ? "Salvando..."
                 : mode === "create"
-                ? "Criar professor"
+                ? `Criar ${entityLabel.toLowerCase()}`
                 : "Salvar alterações"}
             </button>
           </div>

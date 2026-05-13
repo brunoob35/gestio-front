@@ -31,6 +31,7 @@ export default function StudentModal({
   const [form, setForm] = useState<StudentFormValues>(initialForm);
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [submitAttempted, setSubmitAttempted] = useState(false);
 
   useEffect(() => {
     if (!open) return;
@@ -39,6 +40,7 @@ export default function StudentModal({
       nascimento: initialValues?.nascimento ?? "",
     });
     setStep(0);
+    setSubmitAttempted(false);
   }, [initialValues, open]);
 
   if (!open) return null;
@@ -53,6 +55,13 @@ export default function StudentModal({
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
+    setSubmitAttempted(true);
+
+    if (!form.nome.trim()) {
+      setStep(0);
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -68,7 +77,7 @@ export default function StudentModal({
       <div className="student-modal" onClick={(event) => event.stopPropagation()}>
         <div className="student-modal__header">
           <h2>{mode === "create" ? "Cadastrar Novo Aluno" : "Editar Aluno"}</h2>
-          <button type="button" onClick={onClose} aria-label="Fechar modal">
+          <button type="button" onClick={onClose} aria-label="Fechar modal" title="Fechar modal">
             ×
           </button>
         </div>
@@ -86,10 +95,10 @@ export default function StudentModal({
           ))}
         </div>
 
-        <form className="student-modal__form" onSubmit={handleSubmit}>
+        <form className="student-modal__form" onSubmit={handleSubmit} noValidate>
           {step === 0 ? (
             <div className="student-modal__grid">
-              <label>
+              <label className={submitAttempted && !form.nome.trim() ? "is-invalid" : ""}>
                 <span>Nome Completo *</span>
                 <input
                   name="nome"

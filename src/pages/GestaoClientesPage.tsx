@@ -58,8 +58,6 @@ export default function GestaoClientesPage() {
   const {
     customers,
     students,
-    hasLoadedCustomers,
-    hasLoadedStudents,
     loadCustomers,
     loadStudents,
     upsertCustomer,
@@ -76,27 +74,28 @@ export default function GestaoClientesPage() {
   const [detailsLoadingId, setDetailsLoadingId] = useState<number | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
+
     async function load() {
+      setLoading(true);
       try {
         await Promise.all([
           loadCustomers(),
           loadStudents(),
         ]);
       } finally {
-        setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     }
 
-    if (hasLoadedCustomers && hasLoadedStudents) {
-      setLoading(false);
-      void loadCustomers();
-      void loadStudents();
-      return;
-    }
-
-    setLoading(true);
     void load();
-  }, [hasLoadedCustomers, hasLoadedStudents, loadCustomers, loadStudents]);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [loadCustomers, loadStudents]);
 
   const filteredCustomers = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -350,7 +349,6 @@ export default function GestaoClientesPage() {
           <table className="gestao-professores__table">
             <thead>
               <tr>
-                <th>ID</th>
                 <th>Nome</th>
                 <th>CPF</th>
                 <th>Contato</th>
@@ -364,13 +362,13 @@ export default function GestaoClientesPage() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={8} className="gestao-professores__empty">
+                  <td colSpan={7} className="gestao-professores__empty">
                     Carregando clientes...
                   </td>
                 </tr>
               ) : items.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="gestao-professores__empty">
+                  <td colSpan={7} className="gestao-professores__empty">
                     {emptyMessage}
                   </td>
                 </tr>
@@ -383,7 +381,6 @@ export default function GestaoClientesPage() {
                   return (
                     <Fragment key={customer.id}>
                       <tr className={isExpanded ? "gestao-clientes__row is-expanded" : "gestao-clientes__row"}>
-                        <td>{customer.code}</td>
                         <td>{customer.nome}</td>
                         <td>{customer.cpf}</td>
                         <td>
@@ -406,15 +403,15 @@ export default function GestaoClientesPage() {
                         </td>
                         <td>
                           <div className="gestao-professores__actions">
-                            <button type="button" onClick={() => void handleToggleExpand(customer)}>
+                            <button type="button" onClick={() => void handleToggleExpand(customer)} title="Visualizar cliente" aria-label="Visualizar cliente">
                               <img src={eyeIcon} alt="Ver cliente" />
                             </button>
 
-                            <button type="button" onClick={() => void handleStartEdit(customer)}>
+                            <button type="button" onClick={() => void handleStartEdit(customer)} title="Editar cliente" aria-label="Editar cliente">
                               <img src={pencilIcon} alt="Editar cliente" />
                             </button>
 
-                            <button type="button" onClick={() => handleDelete(customer)}>
+                            <button type="button" onClick={() => handleDelete(customer)} title="Desativar cliente" aria-label="Desativar cliente">
                               <img
                                 className="gestao-professores__trash-icon"
                                 src={trashIcon}
@@ -427,7 +424,7 @@ export default function GestaoClientesPage() {
 
                       {isExpanded ? (
                         <tr className="gestao-clientes__details-row">
-                          <td colSpan={8}>
+                          <td colSpan={7}>
                             <div className="gestao-clientes__details-card">
                               <div className="gestao-clientes__detail-block">
                                 <h4>Endereços</h4>

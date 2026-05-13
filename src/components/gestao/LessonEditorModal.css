@@ -1,0 +1,238 @@
+.lesson-editor__backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.42);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 1100;
+}
+
+.lesson-editor {
+  width: 100%;
+  max-width: 860px;
+  max-height: calc(100vh - 40px);
+  overflow: auto;
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 24px;
+  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.22);
+}
+
+.lesson-editor__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.lesson-editor__header h2 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.lesson-editor__header button {
+  border: 0;
+  background: transparent;
+  font-size: 1.8rem;
+  color: #6b7280;
+  cursor: pointer;
+}
+
+.lesson-editor__form {
+  display: grid;
+  gap: 18px;
+}
+
+.lesson-editor__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.lesson-editor__grid label,
+.lesson-editor__students-card {
+  display: grid;
+  gap: 8px;
+}
+
+.lesson-editor__grid span,
+.lesson-editor__students-card h3 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #374151;
+}
+
+.lesson-editor__students-card p {
+  color: #64748b;
+  font-size: 0.94rem;
+}
+
+.lesson-editor__grid input,
+.lesson-editor__grid select,
+.lesson-editor__students-add select,
+.lesson-editor__grid textarea {
+  border: 1px solid #d1d5db;
+  border-radius: 14px;
+  padding: 12px 14px;
+  font-size: 1rem;
+  outline: none;
+  background: #fff;
+  font-family: inherit;
+}
+
+.lesson-editor__grid input,
+.lesson-editor__grid select,
+.lesson-editor__students-add select {
+  height: 48px;
+}
+
+.lesson-editor__grid textarea {
+  min-height: 92px;
+  resize: vertical;
+}
+
+.lesson-editor__grid input:focus,
+.lesson-editor__grid select:focus,
+.lesson-editor__students-add select:focus,
+.lesson-editor__grid textarea:focus {
+  border-color: #4f46e5;
+}
+
+.lesson-editor__full {
+  grid-column: 1 / -1;
+}
+
+.lesson-editor__students-card {
+  border: 1px solid #dbe3f1;
+  border-radius: 18px;
+  padding: 18px;
+  background: #f8fafc;
+}
+
+.lesson-editor__students-add {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.lesson-editor__students-add select {
+  flex: 1;
+}
+
+.lesson-editor__students-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.lesson-editor__students-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid #dbe3f1;
+  border-radius: 14px;
+  background: #ffffff;
+}
+
+.lesson-editor__students-list li div {
+  display: grid;
+  gap: 4px;
+}
+
+.lesson-editor__students-list li span {
+  color: #64748b;
+  font-size: 0.92rem;
+  text-transform: capitalize;
+}
+
+.lesson-editor__student-remove {
+  width: 36px;
+  height: 36px;
+  border: 1px solid #fecaca;
+  border-radius: 12px;
+  background: #fff5f5;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.lesson-editor__student-remove img {
+  width: 16px;
+  height: 16px;
+}
+
+.lesson-editor__helper,
+.lesson-editor__feedback {
+  margin: 0;
+  font-size: 0.94rem;
+}
+
+.lesson-editor__helper {
+  color: #64748b;
+}
+
+.lesson-editor__feedback {
+  font-weight: 600;
+}
+
+.lesson-editor__feedback.is-success {
+  color: #15803d;
+}
+
+.lesson-editor__feedback.is-error {
+  color: #dc2626;
+}
+
+.lesson-editor__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.lesson-editor__button {
+  height: 46px;
+  border-radius: 14px;
+  border: 0;
+  padding: 0 18px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.lesson-editor__button--secondary {
+  background: #eef2f7;
+  color: #111827;
+}
+
+.lesson-editor__button--primary {
+  background: #0b0f2f;
+  color: #ffffff;
+}
+
+.lesson-editor__button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+@media (max-width: 720px) {
+  .lesson-editor__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .lesson-editor__students-add,
+  .lesson-editor__actions {
+    flex-direction: column;
+  }
+
+  .lesson-editor__button {
+    width: 100%;
+  }
+}

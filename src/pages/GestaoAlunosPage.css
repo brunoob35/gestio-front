@@ -222,7 +222,7 @@
   border: 1px solid #e2e8f0;
 }
 
-.gestao-alunos__lesson-list li div {
+.gestao-alunos__lesson-main {
   display: grid;
   gap: 4px;
 }
@@ -230,6 +230,51 @@
 .gestao-alunos__lesson-list li span {
   color: #64748b;
   font-size: 0.94rem;
+}
+
+.gestao-alunos__lesson-side {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+  flex-shrink: 0;
+  margin-left: auto;
+  padding-left: 16px;
+}
+
+.gestao-alunos__lesson-action {
+  width: 36px;
+  height: 36px;
+  border: 1px solid #dbe3f1;
+  border-radius: 12px;
+  background: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+.gestao-alunos__lesson-action img {
+  width: 16px;
+  height: 16px;
+}
+
+.gestao-alunos__lesson-action:hover {
+  transform: translateY(-1px);
+  border-color: #cbd5e1;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+}
+
+.gestao-alunos__lesson-action.is-danger {
+  border-color: #fecaca;
+  background: #fff5f5;
+}
+
+.gestao-alunos__lesson-action.is-danger:hover {
+  border-color: #fca5a5;
+  box-shadow: 0 10px 24px rgba(220, 38, 38, 0.08);
 }
 
 @media (max-width: 992px) {
@@ -241,5 +286,17 @@
   .gestao-alunos__class-meta {
     min-width: 0;
     text-align: left;
+  }
+
+  .gestao-alunos__lesson-list li {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .gestao-alunos__lesson-side {
+    width: 100%;
+    margin-left: 0;
+    padding-left: 0;
+    justify-content: flex-end;
   }
 }

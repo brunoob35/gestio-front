@@ -63,6 +63,11 @@
   color: #374151;
 }
 
+.class-modal__form label.is-invalid span,
+.class-modal__recurrence-card.is-invalid > .class-modal__recurrence-header span {
+  color: #b91c1c;
+}
+
 .class-modal__form input,
 .class-modal__form select {
   border: 1px solid #d1d5db;
@@ -71,6 +76,12 @@
   font-size: 1rem;
   outline: none;
   background: #fff;
+}
+
+.class-modal__form label.is-invalid input,
+.class-modal__form label.is-invalid select {
+  border-color: #fca5a5;
+  background: #fff5f5;
 }
 
 .class-modal__form input,
@@ -96,6 +107,11 @@
   background: #f8fafc;
 }
 
+.class-modal__recurrence-card.is-invalid {
+  border-color: #fca5a5;
+  background: #fff7f7;
+}
+
 .class-modal__recurrence-header {
   display: flex;
   align-items: flex-start;
@@ -109,10 +125,165 @@
   line-height: 1.5;
 }
 
+.class-modal__single-lesson-card {
+  display: grid;
+  gap: 16px;
+  border-top: 1px solid #dbe3f1;
+  padding-top: 18px;
+}
+
+.class-modal__single-lesson-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.class-modal__single-lesson-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.class-modal__single-lesson-feedback {
+  margin: 0;
+  color: #475569;
+  font-size: 0.95rem;
+}
+
+.class-modal__lesson-list {
+  display: grid;
+  gap: 10px;
+}
+
+.class-modal__lesson-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 16px;
+  border: 1px solid #dbe3f1;
+  border-radius: 14px;
+  background: #ffffff;
+}
+
+.class-modal__lesson-main {
+  display: grid;
+  gap: 4px;
+}
+
+.class-modal__lesson-main strong {
+  color: #0f172a;
+}
+
+.class-modal__lesson-main span {
+  color: #64748b;
+  font-size: 0.94rem;
+}
+
+.class-modal__lesson-side {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.class-modal__lesson-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: #dbeafe;
+  color: #475569;
+  font-size: 0.92rem;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.class-modal__lesson-status.is-pending {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.class-modal__lesson-status.is-completed {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.class-modal__lesson-status.is-overdue,
+.class-modal__lesson-status.is-cancelled {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.class-modal__lesson-status.is-reschedule-pending {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.class-modal__lesson-status.is-rescheduled {
+  background: #bfdbfe;
+  color: #1d4ed8;
+}
+
+.class-modal__lesson-status.is-compensated {
+  background: #fef9c3;
+  color: #a16207;
+}
+
+.class-modal__lesson-icon {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #dbe3f1;
+  border-radius: 12px;
+  background: #ffffff;
+  cursor: pointer;
+}
+
+.class-modal__lesson-icon img {
+  width: 17px;
+  height: 17px;
+}
+
+.class-modal__lesson-icon.is-danger {
+  border-color: #fecaca;
+  background: #fff5f5;
+}
+
+.class-modal__lesson-editor {
+  display: grid;
+  gap: 16px;
+  border: 1px solid #dbe3f1;
+  border-radius: 16px;
+  padding: 16px;
+  background: #ffffff;
+}
+
+.class-modal__lesson-editor-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
 .class-modal__weekday-list {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+}
+
+.class-modal__weekday-list.is-invalid {
+  padding: 10px;
+  border: 1px solid #fca5a5;
+  border-radius: 16px;
+  background: #fff5f5;
 }
 
 .class-modal__weekday {
@@ -184,5 +355,20 @@
 
   .class-modal__recurrence-grid {
     grid-template-columns: 1fr;
+  }
+
+  .class-modal__lesson-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .class-modal__lesson-side {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .class-modal__lesson-editor-buttons {
+    width: 100%;
+    flex-direction: column;
   }
 }

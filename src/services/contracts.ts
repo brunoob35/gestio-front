@@ -1,4 +1,5 @@
 import { api } from "./api";
+import { formatPhoneNumber } from "../utils/phone";
 import type { CustomerAddress } from "./customers";
 import type { Class, ClassPayload } from "./classes";
 
@@ -144,7 +145,7 @@ export function normalizeContract(item: RawRecord): ContractRow {
     first_lesson_date: asString(item.primeira_aula) || undefined,
     representative_email: asString(item.email_representante) || undefined,
     representative_cpf: asString(item.cpf_representante) || undefined,
-    representative_phone: asString(item.telefone_representante) || undefined,
+    representative_phone: formatPhoneNumber(asString(item.telefone_representante)) || undefined,
     representative_rg: asString(item.rg) || undefined,
     representative_civil_status: asString(item.est_civil_representante) || undefined,
     created_at: asString(item.created_at) || undefined,
