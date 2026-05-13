@@ -38,6 +38,8 @@ jobs:
           script: |
             mkdir -p /opt/gestio/frontend/dist
             mkdir -p /opt/gestio/nginx
+            mkdir -p /opt/gestio/mysql-init
+            rm -rf /opt/gestio/frontend/dist/*
 
       - name: Upload frontend dist
         uses: appleboy/scp-action@v0.1.7
@@ -47,7 +49,7 @@ jobs:
           key: ${{ secrets.HOSTINGER_SSH_KEY }}
           port: ${{ secrets.HOSTINGER_PORT || '22' }}
           source: "dist/*"
-          target: "/opt/gestio/frontend/"
+          target: "/opt/gestio/frontend/dist/"
           strip_components: 1
 
       - name: Upload deploy files
