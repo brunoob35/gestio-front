@@ -94,6 +94,11 @@
   font-size: 0.95rem;
 }
 
+.contract-modal__grid label.is-invalid,
+.contract-modal__section label.is-invalid {
+  color: #b91c1c;
+}
+
 .contract-modal__grid input,
 .contract-modal__grid select,
 .contract-modal__section input {
@@ -105,6 +110,16 @@
   font-size: 1rem;
   color: #111827;
   background: #f9fbff;
+}
+
+.contract-modal__grid label.is-invalid input,
+.contract-modal__grid label.is-invalid select,
+.contract-modal__section label.is-invalid input,
+.contract-modal__section label.is-invalid select,
+.contract-modal__grid input.is-invalid,
+.contract-modal__section input.is-invalid {
+  border-color: #fca5a5;
+  background: #fff5f5;
 }
 
 .contract-modal__full {

@@ -110,6 +110,7 @@ export default function CustomerModal({
   const [activeTab, setActiveTab] = useState<"customer" | "addresses" | "students">("customer");
   const [loading, setLoading] = useState(false);
   const [loadingCepIndex, setLoadingCepIndex] = useState<number | null>(null);
+  const [submitAttempted, setSubmitAttempted] = useState(false);
 
   useEffect(() => {
     if (!open) return;
@@ -136,6 +137,7 @@ export default function CustomerModal({
       })),
     });
     setActiveTab("customer");
+    setSubmitAttempted(false);
   }, [initialValues, open]);
 
   if (!open) return null;
@@ -344,6 +346,7 @@ export default function CustomerModal({
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
+    setSubmitAttempted(true);
 
     if (!values.nome.trim() || !values.cpf.trim() || !values.telefone.trim()) {
       setActiveTab("customer");
@@ -389,7 +392,7 @@ export default function CustomerModal({
       <div className="customer-modal" onClick={(event) => event.stopPropagation()}>
         <div className="customer-modal__header">
           <h2>{mode === "create" ? "Cadastrar Novo Cliente" : "Editar Cliente"}</h2>
-          <button type="button" onClick={onClose} aria-label="Fechar modal">
+          <button type="button" onClick={onClose} aria-label="Fechar modal" title="Fechar modal">
             ×
           </button>
         </div>
@@ -418,10 +421,10 @@ export default function CustomerModal({
           </button>
         </div>
 
-        <form className="customer-modal__form" onSubmit={handleSubmit}>
+        <form className="customer-modal__form" onSubmit={handleSubmit} noValidate>
           {activeTab === "customer" ? (
             <div className="customer-modal__grid">
-              <label>
+              <label className={submitAttempted && !values.nome.trim() ? "is-invalid" : ""}>
                 <span>Nome Completo *</span>
                 <input
                   type="text"
@@ -431,7 +434,7 @@ export default function CustomerModal({
                 />
               </label>
 
-              <label>
+              <label className={submitAttempted && !values.cpf.trim() ? "is-invalid" : ""}>
                 <span>CPF *</span>
                 <input
                   type="text"
@@ -461,7 +464,7 @@ export default function CustomerModal({
                 />
               </label>
 
-              <label>
+              <label className={submitAttempted && !values.telefone.trim() ? "is-invalid" : ""}>
                 <span>Telefone *</span>
                 <input
                   type="text"
@@ -498,7 +501,7 @@ export default function CustomerModal({
                       </div>
 
                       <div className="customer-modal__grid">
-                        <label>
+                        <label className={submitAttempted && !address.cep.trim() ? "is-invalid" : ""}>
                           <span>CEP *</span>
                           <div className="customer-modal__input-with-indicator">
                             <input
@@ -514,7 +517,7 @@ export default function CustomerModal({
                           </div>
                         </label>
 
-                        <label>
+                        <label className={submitAttempted && !address.rua.trim() ? "is-invalid" : ""}>
                           <span>Rua / Logradouro *</span>
                           <input
                             type="text"
@@ -523,7 +526,7 @@ export default function CustomerModal({
                           />
                         </label>
 
-                        <label>
+                        <label className={submitAttempted && !address.numero.trim() ? "is-invalid" : ""}>
                           <span>Número *</span>
                           <input
                             type="text"
@@ -541,7 +544,7 @@ export default function CustomerModal({
                           />
                         </label>
 
-                        <label>
+                        <label className={submitAttempted && !address.bairro.trim() ? "is-invalid" : ""}>
                           <span>Bairro *</span>
                           <input
                             type="text"
@@ -550,7 +553,7 @@ export default function CustomerModal({
                           />
                         </label>
 
-                        <label>
+                        <label className={submitAttempted && !address.cidade.trim() ? "is-invalid" : ""}>
                           <span>Cidade *</span>
                           <input
                             type="text"
@@ -559,7 +562,7 @@ export default function CustomerModal({
                           />
                         </label>
 
-                        <label>
+                        <label className={submitAttempted && !address.estado.trim() ? "is-invalid" : ""}>
                           <span>Estado *</span>
                           <input
                             type="text"
@@ -635,8 +638,8 @@ export default function CustomerModal({
                       <div className="customer-modal__grid">
                         {student.mode === "new" ? (
                           <>
-                            <label>
-                              <span>Nome do Aluno</span>
+                            <label className={submitAttempted && !student.nome.trim() ? "is-invalid" : ""}>
+                              <span>Nome do Aluno *</span>
                               <input
                                 type="text"
                                 value={student.nome}

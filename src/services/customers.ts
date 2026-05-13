@@ -1,4 +1,5 @@
 import { api } from "./api";
+import { formatPhoneNumber } from "../utils/phone";
 import { normalizeStudent, type StudentRow } from "./students";
 
 export type CustomerAddress = {
@@ -99,7 +100,7 @@ export function normalizeCustomer(item: RawCustomer): CustomerRow {
     cpf: asString(item.cpf),
     rg: asString(item.rg),
     email: asString(item.email),
-    telefone: asString(item.telefone) || asString(item.phone),
+    telefone: formatPhoneNumber(asString(item.telefone) || asString(item.phone)),
     status: asBoolean(item.ativo) || asString(item.status) === "ativo" ? "ativo" : "inativo",
     studentsCount: asNumber(item.students_count) || rawStudents.length,
     contractsCount: asNumber(item.contracts_count),

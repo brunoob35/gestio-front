@@ -46,7 +46,7 @@ export default function TeacherAssignmentModal({
       <div className="teacher-modal" onClick={(event) => event.stopPropagation()}>
         <div className="teacher-modal__header">
           <h2>Professor da turma</h2>
-          <button type="button" onClick={onClose} aria-label="Fechar modal">
+          <button type="button" onClick={onClose} aria-label="Fechar modal" title="Fechar modal">
             ×
           </button>
         </div>

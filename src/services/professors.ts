@@ -1,4 +1,5 @@
 import { api } from "./api";
+import { formatPhoneNumber } from "../utils/phone";
 
 export type ProfessorRow = {
   id: number;
@@ -92,7 +93,7 @@ function normalizeProfessor(item: RawProfessor): ProfessorRow {
     code: buildProfessorCode(id),
     nome,
     email,
-    telefone,
+    telefone: formatPhoneNumber(telefone),
     cpf,
     rg,
     nascimento,

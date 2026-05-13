@@ -73,7 +73,7 @@ export default function ClassStudentsModal({
             <p>{className}</p>
           </div>
 
-          <button type="button" onClick={onClose} aria-label="Fechar modal">
+          <button type="button" onClick={onClose} aria-label="Fechar modal" title="Fechar modal">
             ×
           </button>
         </div>

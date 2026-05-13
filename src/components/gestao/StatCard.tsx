@@ -5,7 +5,12 @@ type StatCardProps = {
   value: string;
   detail: string;
   icon: string;
-  positive?: boolean;
+  tone?: "blue" | "green" | "red" | "yellow";
+  detailTone?: "positive" | "negative" | "neutral";
+  secondaryDetail?: string;
+  actionLabel?: string;
+  actionIcon?: string;
+  onAction?: () => void;
 };
 
 export default function StatCard({
@@ -13,19 +18,34 @@ export default function StatCard({
   value,
   detail,
   icon,
-  positive = false,
+  tone = "blue",
+  detailTone = "neutral",
+  secondaryDetail,
+  actionLabel,
+  actionIcon,
+  onAction,
 }: StatCardProps) {
   return (
-    <article className="stat-card">
+    <article className={`stat-card stat-card--${tone}`}>
       <div className="stat-card__top">
         <h2>{title}</h2>
-        <img src={icon} alt="" aria-hidden="true" />
+        <span className={`stat-card__icon-badge stat-card__icon-badge--${tone}`}>
+          <img src={icon} alt="" aria-hidden="true" />
+        </span>
       </div>
 
       <div className="stat-card__content">
         <strong>{value}</strong>
-        <p className={positive ? "is-positive" : ""}>{detail}</p>
+        <p className={`stat-card__detail ${detailTone !== "neutral" ? `is-${detailTone}` : ""}`}>{detail}</p>
+        {secondaryDetail ? <span className="stat-card__secondary-detail">{secondaryDetail}</span> : null}
       </div>
+
+      {actionLabel && onAction ? (
+        <button type="button" className={`stat-card__action stat-card__action--${tone}`} onClick={onAction}>
+          {actionIcon ? <img src={actionIcon} alt="" aria-hidden="true" /> : null}
+          {actionLabel}
+        </button>
+      ) : null}
     </article>
   );
 }

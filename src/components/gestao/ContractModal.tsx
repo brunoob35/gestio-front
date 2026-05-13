@@ -152,11 +152,13 @@ export default function ContractModal({
   const [activeTab, setActiveTab] = useState<"contract" | "responsible" | "student">("contract");
   const [values, setValues] = useState<ContractFormValues>(initialFormValues);
   const [loading, setLoading] = useState(false);
+  const [submitAttempted, setSubmitAttempted] = useState(false);
 
   useEffect(() => {
     if (!open) return;
     setValues(initialValues ?? initialFormValues);
     setActiveTab("contract");
+    setSubmitAttempted(false);
   }, [initialValues, open]);
 
   const availableCustomers = useMemo(
@@ -247,8 +249,37 @@ export default function ContractModal({
     }));
   }
 
+  const invalidContractType = submitAttempted && !values.id_tipo_contrato;
+  const invalidContractValue = submitAttempted && !values.valor;
+  const invalidContractFinalValue = submitAttempted && !values.valor_final;
+  const invalidResponsibleExisting =
+    submitAttempted && values.responsible_mode === "existing" && !values.responsible_customer_id;
+  const invalidResponsibleName =
+    submitAttempted && values.responsible_mode === "new" && !values.responsible_nome.trim();
+  const invalidResponsibleCpf =
+    submitAttempted && values.responsible_mode === "new" && !values.responsible_cpf.trim();
+  const invalidResponsiblePhone =
+    submitAttempted && values.responsible_mode === "new" && !values.responsible_telefone.trim();
+  const invalidResponsibleCep =
+    submitAttempted && values.responsible_mode === "new" && !values.responsible_cep.trim();
+  const invalidResponsibleStreet =
+    submitAttempted && values.responsible_mode === "new" && !values.responsible_rua.trim();
+  const invalidResponsibleNumber =
+    submitAttempted && values.responsible_mode === "new" && !values.responsible_numero.trim();
+  const invalidResponsibleDistrict =
+    submitAttempted && values.responsible_mode === "new" && !values.responsible_bairro.trim();
+  const invalidResponsibleCity =
+    submitAttempted && values.responsible_mode === "new" && !values.responsible_cidade.trim();
+  const invalidResponsibleState =
+    submitAttempted && values.responsible_mode === "new" && !values.responsible_estado.trim();
+  const invalidStudentExisting =
+    submitAttempted && values.student_mode === "existing" && !values.student_id;
+  const invalidStudentName =
+    submitAttempted && values.student_mode === "new" && !values.student_nome.trim();
+
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
+    setSubmitAttempted(true);
 
     if (!values.id_tipo_contrato || !values.valor || !values.valor_final) {
       setActiveTab("contract");
@@ -307,7 +338,7 @@ export default function ContractModal({
       <div className="contract-modal" onClick={(event) => event.stopPropagation()}>
         <div className="contract-modal__header">
           <h2>{mode === "create" ? "Novo Contrato" : "Editar Contrato"}</h2>
-          <button type="button" onClick={onClose} aria-label="Fechar modal">
+          <button type="button" onClick={onClose} aria-label="Fechar modal" title="Fechar modal">
             ×
           </button>
         </div>
@@ -336,10 +367,10 @@ export default function ContractModal({
           </button>
         </div>
 
-        <form className="contract-modal__form" onSubmit={handleSubmit}>
+        <form className="contract-modal__form" onSubmit={handleSubmit} noValidate>
           {activeTab === "contract" ? (
             <div className="contract-modal__grid">
-              <label>
+              <label className={invalidContractType ? "is-invalid" : ""}>
                 <span>Tipo de contrato *</span>
                 <select
                   value={values.id_tipo_contrato}
@@ -369,7 +400,7 @@ export default function ContractModal({
                 </select>
               </label>
 
-              <label>
+              <label className={invalidContractValue ? "is-invalid" : ""}>
                 <span>Valor *</span>
                 <input
                   type="number"
@@ -392,7 +423,7 @@ export default function ContractModal({
                 />
               </label>
 
-              <label>
+              <label className={invalidContractFinalValue ? "is-invalid" : ""}>
                 <span>Valor final *</span>
                 <input
                   type="number"
@@ -513,19 +544,20 @@ export default function ContractModal({
               {values.responsible_mode === "existing" ? (
                 <div className="contract-modal__grid">
                   <label className="contract-modal__full">
-                    <span>Responsável existente</span>
+                    <span>Responsável existente *</span>
                     <input
                       type="text"
                       list="contract-modal-customers"
                       value={values.responsible_query}
                       onChange={(event) => handleResponsibleQueryChange(event.target.value)}
                       placeholder="Digite para buscar um cliente já cadastrado"
+                      className={invalidResponsibleExisting ? "is-invalid" : ""}
                     />
                   </label>
                 </div>
               ) : (
                 <div className="contract-modal__grid">
-                  <label>
+                  <label className={invalidResponsibleName ? "is-invalid" : ""}>
                     <span>Nome do responsável *</span>
                     <input
                       type="text"
@@ -534,7 +566,7 @@ export default function ContractModal({
                     />
                   </label>
 
-                  <label>
+                  <label className={invalidResponsibleCpf ? "is-invalid" : ""}>
                     <span>CPF *</span>
                     <input
                       type="text"
@@ -562,7 +594,7 @@ export default function ContractModal({
                     />
                   </label>
 
-                  <label>
+                  <label className={invalidResponsiblePhone ? "is-invalid" : ""}>
                     <span>Telefone *</span>
                     <input
                       type="text"
@@ -572,7 +604,7 @@ export default function ContractModal({
                     />
                   </label>
 
-                  <label>
+                  <label className={invalidResponsibleCep ? "is-invalid" : ""}>
                     <span>CEP *</span>
                     <input
                       type="text"
@@ -582,7 +614,7 @@ export default function ContractModal({
                     />
                   </label>
 
-                  <label className="contract-modal__full">
+                  <label className={`contract-modal__full ${invalidResponsibleStreet ? "is-invalid" : ""}`}>
                     <span>Rua / Logradouro *</span>
                     <input
                       type="text"
@@ -591,7 +623,7 @@ export default function ContractModal({
                     />
                   </label>
 
-                  <label>
+                  <label className={invalidResponsibleNumber ? "is-invalid" : ""}>
                     <span>Número *</span>
                     <input
                       type="text"
@@ -609,7 +641,7 @@ export default function ContractModal({
                     />
                   </label>
 
-                  <label>
+                  <label className={invalidResponsibleDistrict ? "is-invalid" : ""}>
                     <span>Bairro *</span>
                     <input
                       type="text"
@@ -618,7 +650,7 @@ export default function ContractModal({
                     />
                   </label>
 
-                  <label>
+                  <label className={invalidResponsibleCity ? "is-invalid" : ""}>
                     <span>Cidade *</span>
                     <input
                       type="text"
@@ -627,7 +659,7 @@ export default function ContractModal({
                     />
                   </label>
 
-                  <label>
+                  <label className={invalidResponsibleState ? "is-invalid" : ""}>
                     <span>Estado *</span>
                     <input
                       type="text"
@@ -669,19 +701,20 @@ export default function ContractModal({
               {values.student_mode === "existing" ? (
                 <div className="contract-modal__grid">
                   <label className="contract-modal__full">
-                    <span>Aluno existente</span>
+                    <span>Aluno existente *</span>
                     <input
                       type="text"
                       list="contract-modal-students"
                       value={values.student_query}
                       onChange={(event) => handleStudentQueryChange(event.target.value)}
                       placeholder="Digite para buscar um aluno já cadastrado"
+                      className={invalidStudentExisting ? "is-invalid" : ""}
                     />
                   </label>
                 </div>
               ) : (
                 <div className="contract-modal__grid">
-                  <label>
+                  <label className={invalidStudentName ? "is-invalid" : ""}>
                     <span>Nome do aluno *</span>
                     <input
                       type="text"

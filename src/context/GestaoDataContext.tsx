@@ -1,8 +1,8 @@
 import {
+  useCallback,
   createContext,
   useContext,
   useMemo,
-  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -59,8 +59,6 @@ type GestaoDataContextValue = {
 
 const GestaoDataContext = createContext<GestaoDataContextValue | null>(null);
 
-const CACHE_TTL_MS = 60_000;
-
 export function GestaoDataProvider({ children }: { children: ReactNode }) {
   const [classes, setClasses] = useState<Class[]>([]);
   const [professors, setProfessors] = useState<ProfessorRow[]>([]);
@@ -75,169 +73,59 @@ export function GestaoDataProvider({ children }: { children: ReactNode }) {
   const [hasLoadedStudents, setHasLoadedStudents] = useState(false);
   const [hasLoadedCustomers, setHasLoadedCustomers] = useState(false);
 
-  const classesLoadedAtRef = useRef(0);
-  const professorsLoadedAtRef = useRef(0);
-  const allProfessorsLoadedAtRef = useRef(0);
-  const studentsLoadedAtRef = useRef(0);
-  const customersLoadedAtRef = useRef(0);
+  const loadClasses = useCallback(async (_options?: LoadOptions) => {
+    const data = await fetchClasses();
+    setClasses(data);
+    setHasLoadedClasses(true);
+    return data;
+  }, []);
 
-  const classesPromiseRef = useRef<Promise<Class[]> | null>(null);
-  const professorsPromiseRef = useRef<Promise<ProfessorRow[]> | null>(null);
-  const allProfessorsPromiseRef = useRef<Promise<ProfessorRow[]> | null>(null);
-  const studentsPromiseRef = useRef<Promise<StudentRow[]> | null>(null);
-  const customersPromiseRef = useRef<Promise<CustomerRow[]> | null>(null);
+  const loadProfessors = useCallback(async (_options?: LoadOptions) => {
+    const baseProfessors = await fetchProfessors();
+    const ids = baseProfessors.map((item) => item.id);
 
-  function isFresh(timestamp: number) {
-    return Date.now() - timestamp < CACHE_TTL_MS;
-  }
+    let counts: Record<number, number> = {};
 
-  async function loadClasses(options?: LoadOptions) {
-    const force = options?.force ?? false;
-
-    if (!force && hasLoadedClasses && isFresh(classesLoadedAtRef.current)) {
-      return classes;
-    }
-
-    if (!force && classesPromiseRef.current) {
-      return classesPromiseRef.current;
-    }
-
-    const promise = fetchClasses()
-      .then((data) => {
-        setClasses(data);
-        setHasLoadedClasses(true);
-        classesLoadedAtRef.current = Date.now();
-        return data;
-      })
-      .finally(() => {
-        classesPromiseRef.current = null;
-      });
-
-    classesPromiseRef.current = promise;
-    return promise;
-  }
-
-  async function loadProfessors(options?: LoadOptions) {
-    const force = options?.force ?? false;
-
-    if (!force && hasLoadedProfessors && isFresh(professorsLoadedAtRef.current)) {
-      return professors;
-    }
-
-    if (!force && professorsPromiseRef.current) {
-      return professorsPromiseRef.current;
-    }
-
-    const promise = (async () => {
-      const baseProfessors = await fetchProfessors();
-      const ids = baseProfessors.map((item) => item.id);
-
-      let counts: Record<number, number> = {};
-
-      if (ids.length) {
-        try {
-          counts = await fetchProfessorClassesCount(ids);
-        } catch (error) {
-          console.error("Erro ao carregar contagem de turmas:", error);
-        }
+    if (ids.length) {
+      try {
+        counts = await fetchProfessorClassesCount(ids);
+      } catch (error) {
+        console.error("Erro ao carregar contagem de turmas:", error);
       }
-
-      const merged = baseProfessors.map((item) => ({
-        ...item,
-        turmasAtivas: counts[item.id] ?? item.turmasAtivas ?? 0,
-      }));
-
-      setProfessors(merged);
-      setHasLoadedProfessors(true);
-      professorsLoadedAtRef.current = Date.now();
-      return merged;
-    })().finally(() => {
-      professorsPromiseRef.current = null;
-    });
-
-    professorsPromiseRef.current = promise;
-    return promise;
-  }
-
-  async function loadAllProfessors(options?: LoadOptions) {
-    const force = options?.force ?? false;
-
-    if (!force && hasLoadedAllProfessors && isFresh(allProfessorsLoadedAtRef.current)) {
-      return allProfessors;
     }
 
-    if (!force && allProfessorsPromiseRef.current) {
-      return allProfessorsPromiseRef.current;
-    }
+    const merged = baseProfessors.map((item) => ({
+      ...item,
+      turmasAtivas: counts[item.id] ?? item.turmasAtivas ?? 0,
+    }));
 
-    const promise = fetchAllProfessors()
-      .then((data) => {
-        setAllProfessors(data);
-        setHasLoadedAllProfessors(true);
-        allProfessorsLoadedAtRef.current = Date.now();
-        return data;
-      })
-      .finally(() => {
-        allProfessorsPromiseRef.current = null;
-      });
+    setProfessors(merged);
+    setHasLoadedProfessors(true);
+    return merged;
+  }, []);
 
-    allProfessorsPromiseRef.current = promise;
-    return promise;
-  }
+  const loadAllProfessors = useCallback(async (_options?: LoadOptions) => {
+    const data = await fetchAllProfessors();
+    setAllProfessors(data);
+    setHasLoadedAllProfessors(true);
+    return data;
+  }, []);
 
-  async function loadStudents(options?: LoadOptions) {
-    const force = options?.force ?? false;
+  const loadStudents = useCallback(async (_options?: LoadOptions) => {
+    const data = await fetchStudents();
+    setStudents(data);
+    setHasLoadedStudents(true);
+    return data;
+  }, []);
 
-    if (!force && hasLoadedStudents && isFresh(studentsLoadedAtRef.current)) {
-      return students;
-    }
+  const loadCustomers = useCallback(async (_options?: LoadOptions) => {
+    const data = await fetchCustomers();
+    setCustomers(data);
+    setHasLoadedCustomers(true);
+    return data;
+  }, []);
 
-    if (!force && studentsPromiseRef.current) {
-      return studentsPromiseRef.current;
-    }
-
-    const promise = fetchStudents()
-      .then((data) => {
-        setStudents(data);
-        setHasLoadedStudents(true);
-        studentsLoadedAtRef.current = Date.now();
-        return data;
-      })
-      .finally(() => {
-        studentsPromiseRef.current = null;
-      });
-
-    studentsPromiseRef.current = promise;
-    return promise;
-  }
-
-  async function loadCustomers(options?: LoadOptions) {
-    const force = options?.force ?? false;
-
-    if (!force && hasLoadedCustomers && isFresh(customersLoadedAtRef.current)) {
-      return customers;
-    }
-
-    if (!force && customersPromiseRef.current) {
-      return customersPromiseRef.current;
-    }
-
-    const promise = fetchCustomers()
-      .then((data) => {
-        setCustomers(data);
-        setHasLoadedCustomers(true);
-        customersLoadedAtRef.current = Date.now();
-        return data;
-      })
-      .finally(() => {
-        customersPromiseRef.current = null;
-      });
-
-    customersPromiseRef.current = promise;
-    return promise;
-  }
-
-  function upsertClass(classItem: Class) {
+  const upsertClass = useCallback((classItem: Class) => {
     setClasses((current) => {
       const exists = current.some((item) => item.id === classItem.id);
       const next = exists
@@ -247,15 +135,13 @@ export function GestaoDataProvider({ children }: { children: ReactNode }) {
       return next.sort((left, right) => left.name.localeCompare(right.name));
     });
     setHasLoadedClasses(true);
-    classesLoadedAtRef.current = Date.now();
-  }
+  }, []);
 
-  function removeClass(classID: number) {
+  const removeClass = useCallback((classID: number) => {
     setClasses((current) => current.filter((item) => item.id !== classID));
-    classesLoadedAtRef.current = Date.now();
-  }
+  }, []);
 
-  function upsertProfessor(professor: ProfessorRow) {
+  const upsertProfessor = useCallback((professor: ProfessorRow) => {
     const updateList = (current: ProfessorRow[]) => {
       const exists = current.some((item) => item.id === professor.id);
       const next = exists
@@ -269,21 +155,17 @@ export function GestaoDataProvider({ children }: { children: ReactNode }) {
     setAllProfessors(updateList);
     setHasLoadedProfessors(true);
     setHasLoadedAllProfessors(true);
-    professorsLoadedAtRef.current = Date.now();
-    allProfessorsLoadedAtRef.current = Date.now();
-  }
+  }, []);
 
-  function removeProfessor(professorID: number) {
+  const removeProfessor = useCallback((professorID: number) => {
     const filterList = (current: ProfessorRow[]) =>
       current.filter((item) => item.id !== professorID);
 
     setProfessors(filterList);
     setAllProfessors(filterList);
-    professorsLoadedAtRef.current = Date.now();
-    allProfessorsLoadedAtRef.current = Date.now();
-  }
+  }, []);
 
-  function upsertStudent(student: StudentRow) {
+  const upsertStudent = useCallback((student: StudentRow) => {
     setStudents((current) => {
       const exists = current.some((item) => item.id === student.id);
       const next = exists
@@ -293,15 +175,13 @@ export function GestaoDataProvider({ children }: { children: ReactNode }) {
       return next.sort((left, right) => left.nome.localeCompare(right.nome));
     });
     setHasLoadedStudents(true);
-    studentsLoadedAtRef.current = Date.now();
-  }
+  }, []);
 
-  function removeStudent(studentID: number) {
+  const removeStudent = useCallback((studentID: number) => {
     setStudents((current) => current.filter((item) => item.id !== studentID));
-    studentsLoadedAtRef.current = Date.now();
-  }
+  }, []);
 
-  function upsertCustomer(customer: CustomerRow) {
+  const upsertCustomer = useCallback((customer: CustomerRow) => {
     setCustomers((current) => {
       const exists = current.some((item) => item.id === customer.id);
       const next = exists
@@ -311,17 +191,15 @@ export function GestaoDataProvider({ children }: { children: ReactNode }) {
       return next.sort((left, right) => left.nome.localeCompare(right.nome));
     });
     setHasLoadedCustomers(true);
-    customersLoadedAtRef.current = Date.now();
-  }
+  }, []);
 
-  function removeCustomer(customerID: number) {
+  const removeCustomer = useCallback((customerID: number) => {
     setCustomers((current) => current.filter((item) => item.id !== customerID));
-    customersLoadedAtRef.current = Date.now();
-  }
+  }, []);
 
-  function invalidateStudentClassLinks() {
+  const invalidateStudentClassLinks = useCallback(() => {
     setStudentClassLinksVersion((current) => current + 1);
-  }
+  }, []);
 
   const value = useMemo<GestaoDataContextValue>(
     () => ({

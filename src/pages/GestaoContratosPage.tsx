@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import GestaoShell from "../components/gestao/GestaoShell";
 import ContractModal, {
   type ContractFormValues,
@@ -10,6 +10,7 @@ import { useGestaoData } from "../context/GestaoDataContext";
 import {
   createClassFromContract,
   createContract,
+  fetchContract,
   fetchContracts,
   fetchContractStatuses,
   fetchContractTypes,
@@ -20,10 +21,16 @@ import {
 } from "../services/contracts";
 import type { CustomerRow } from "../services/customers";
 import type { StudentRow } from "../services/students";
+import {
+  fetchLessonsByClass,
+  type Lesson,
+} from "../services/lessons";
 import { buildRecurrenceDescription, type ClassRecurrence } from "../utils/classRecurrence";
 import eyeIcon from "../assets/icons/eye-show-svgrepo-com.svg";
 import studentIcon from "../assets/icons/student-svgrepo-com.svg";
 import contractIcon from "../assets/icons/file-alt-svgrepo-com.svg";
+import pencilIcon from "../assets/icons/pencil-svgrepo-com.svg";
+import { getLessonStatusPresentation } from "../utils/lessonStatus";
 import "./GestaoContratosPage.css";
 
 function formatCurrency(value: number) {
@@ -67,6 +74,21 @@ function buildStatusClassName(statusName?: string) {
       return "is-warning";
     default:
       return "";
+  }
+}
+
+function buildLessonStatusClassName(tone: string) {
+  switch (tone) {
+    case "positive":
+      return "is-success";
+    case "warning":
+      return "is-warning";
+    case "negative":
+      return "is-danger";
+    case "info":
+      return "is-info";
+    default:
+      return "is-neutral";
   }
 }
 
@@ -205,6 +227,7 @@ function buildClassInitialValues(contract: ContractRow): ClassFormValues {
 
 export default function GestaoContratosPage() {
   const {
+    classes,
     customers,
     students,
     allProfessors,
@@ -223,6 +246,13 @@ export default function GestaoContratosPage() {
   const [createOpen, setCreateOpen] = useState(false);
   const [editingContract, setEditingContract] = useState<ContractRow | null>(null);
   const [classSourceContract, setClassSourceContract] = useState<ContractRow | null>(null);
+  const [expandedContractId, setExpandedContractId] = useState<number | null>(null);
+  const [expandedContractDetails, setExpandedContractDetails] = useState<Record<number, ContractRow>>({});
+  const [expandingContractId, setExpandingContractId] = useState<number | null>(null);
+  const [expandedContractClassesOpen, setExpandedContractClassesOpen] = useState<Record<number, boolean>>({});
+  const [expandedContractClassId, setExpandedContractClassId] = useState<Record<number, number | null>>({});
+  const [contractClassLessons, setContractClassLessons] = useState<Record<number, Lesson[]>>({});
+  const [loadingContractClassId, setLoadingContractClassId] = useState<number | null>(null);
 
   async function loadContractData() {
     const [contractsData, typesData, statusesData] = await Promise.all([
@@ -244,6 +274,7 @@ export default function GestaoContratosPage() {
           loadCustomers(),
           loadStudents(),
           loadAllProfessors(),
+          loadClasses(),
         ]);
       } finally {
         setLoading(false);
@@ -252,7 +283,7 @@ export default function GestaoContratosPage() {
 
     setLoading(true);
     void load();
-  }, [loadAllProfessors, loadCustomers, loadStudents]);
+  }, [loadAllProfessors, loadClasses, loadCustomers, loadStudents]);
 
   const filteredContracts = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -314,6 +345,228 @@ export default function GestaoContratosPage() {
       result.generated_lessons_count
         ? `Turma criada a partir do contrato com ${result.generated_lessons_count} aulas geradas.`
         : "Turma criada a partir do contrato."
+    );
+  }
+
+  async function handleToggleContractClassPanel(contractId: number) {
+    setExpandedContractClassesOpen((current) => ({
+      ...current,
+      [contractId]: !current[contractId],
+    }));
+  }
+
+  async function handleToggleContractClass(contractId: number, classId: number) {
+    if (expandedContractClassId[contractId] === classId) {
+      setExpandedContractClassId((current) => ({
+        ...current,
+        [contractId]: null,
+      }));
+      return;
+    }
+
+    setExpandedContractClassId((current) => ({
+      ...current,
+      [contractId]: classId,
+    }));
+
+    if (contractClassLessons[classId]) {
+      return;
+    }
+
+    setLoadingContractClassId(classId);
+    try {
+      const lessons = await fetchLessonsByClass(classId);
+      setContractClassLessons((current) => ({
+        ...current,
+        [classId]: lessons,
+      }));
+    } catch (error) {
+      console.error("Erro ao carregar aulas da turma vinculada ao contrato:", error);
+      setFeedback("Não foi possível carregar as aulas da turma vinculada ao contrato.");
+    } finally {
+      setLoadingContractClassId(null);
+    }
+  }
+
+  async function handleToggleExpand(contract: ContractRow) {
+    if (expandedContractId === contract.id) {
+      setExpandedContractId(null);
+      return;
+    }
+
+    setExpandedContractId(contract.id);
+
+    if (expandedContractDetails[contract.id]) {
+      return;
+    }
+
+    setExpandingContractId(contract.id);
+    try {
+      const details = await fetchContract(contract.id);
+      setExpandedContractDetails((current) => ({
+        ...current,
+        [contract.id]: details,
+      }));
+    } catch (error) {
+      console.error("Erro ao carregar detalhes do contrato:", error);
+      setFeedback("Não foi possível carregar os detalhes do contrato.");
+    } finally {
+      setExpandingContractId(null);
+    }
+  }
+
+  function renderExpandedContract(contract: ContractRow) {
+    const details = expandedContractDetails[contract.id] ?? contract;
+    const isLoadingDetails = expandingContractId === contract.id && !expandedContractDetails[contract.id];
+    const linkedClasses = details.class_id
+      ? classes.filter((item) => item.id === details.class_id)
+      : [];
+    const isClassesPanelOpen = expandedContractClassesOpen[contract.id] ?? false;
+    const expandedLinkedClassId = expandedContractClassId[contract.id] ?? null;
+
+    return (
+      <tr className="gestao-contracts__expanded-row">
+        <td colSpan={10}>
+          <div className="gestao-contracts__expanded-card">
+            {isLoadingDetails ? (
+              <p className="gestao-contracts__expanded-placeholder">Carregando detalhes do contrato...</p>
+            ) : (
+              <div className="gestao-contracts__expanded-grid">
+                <div className="gestao-contracts__expanded-section">
+                  <h4>Contrato</h4>
+                  <ul>
+                    <li><strong>ID:</strong> {details.code}</li>
+                    <li><strong>Status:</strong> {details.effective_status_name}</li>
+                    <li><strong>Tipo:</strong> {details.contract_type_name}</li>
+                    <li><strong>Valor:</strong> {formatCurrency(details.value)}</li>
+                    <li><strong>Valor final:</strong> {formatCurrency(details.final_value || details.value)}</li>
+                    <li><strong>Aulas contratadas:</strong> {details.lessons_count ?? "—"}</li>
+                  </ul>
+                </div>
+
+                <div className="gestao-contracts__expanded-section">
+                  <h4>Datas</h4>
+                  <ul>
+                    <li><strong>Início:</strong> {formatDate(details.start_date)}</li>
+                    <li><strong>Vencimento:</strong> {formatDate(details.due_date)}</li>
+                    <li><strong>Primeira aula:</strong> {formatDate(details.first_lesson_date)}</li>
+                    <li><strong>Periodicidade:</strong> {details.periodicity || "—"}</li>
+                    <li><strong>Duração da aula:</strong> {details.lesson_duration || "—"}</li>
+                    <li><strong>Tempo do contrato:</strong> {details.contract_duration || "—"}</li>
+                  </ul>
+                </div>
+
+                <div className="gestao-contracts__expanded-section">
+                  <h4>Responsável</h4>
+                  <ul>
+                    <li><strong>Nome:</strong> {details.responsible_name}</li>
+                    <li><strong>Representante:</strong> {details.representative_name || "—"}</li>
+                    <li><strong>Email:</strong> {details.representative_email || "—"}</li>
+                    <li><strong>Telefone:</strong> {details.representative_phone || "—"}</li>
+                    <li><strong>CPF:</strong> {details.representative_cpf || "—"}</li>
+                    <li><strong>RG:</strong> {details.representative_rg || "—"}</li>
+                    <li><strong>Estado civil do representante:</strong> {details.representative_civil_status || "—"}</li>
+                  </ul>
+                </div>
+
+                <div className="gestao-contracts__expanded-section">
+                  <h4>Aluno e vínculo</h4>
+                  <ul>
+                    <li><strong>Aluno:</strong> {details.student_name}</li>
+                    <li><strong>Turma vinculada:</strong> {details.class_id ? `T${String(details.class_id).padStart(3, "0")}` : "Nenhuma"}</li>
+                    <li><strong>Parcelas:</strong> {details.installments ?? "—"}</li>
+                    <li><strong>Descrição parcelas:</strong> {details.installments_description || "—"}</li>
+                    <li><strong>Desconto:</strong> {details.discount_percentage ? `${details.discount_percentage}%` : "0%"}</li>
+                  </ul>
+                </div>
+              </div>
+            )}
+
+            <div className="gestao-contracts__expanded-fullwidth">
+              <button
+                type="button"
+                className="gestao-contracts__collapse-header"
+                onClick={() => void handleToggleContractClassPanel(contract.id)}
+              >
+                <div>
+                  <h4>Turmas e Aulas</h4>
+                  <p>Turmas vinculadas a este contrato e suas respectivas aulas.</p>
+                </div>
+                <span>{isClassesPanelOpen ? "−" : "+"}</span>
+              </button>
+
+              {isClassesPanelOpen ? (
+                linkedClasses.length ? (
+                  <div className="gestao-contracts__linked-class-list">
+                    {linkedClasses.map((classItem) => {
+                      const isExpanded = expandedLinkedClassId === classItem.id;
+                      const lessons = contractClassLessons[classItem.id] ?? [];
+
+                      return (
+                        <Fragment key={`contract-${contract.id}-class-${classItem.id}`}>
+                          <button
+                            type="button"
+                            className="gestao-contracts__linked-class-row"
+                            onClick={() => void handleToggleContractClass(contract.id, classItem.id)}
+                          >
+                            <div>
+                              <strong>{classItem.name}</strong>
+                              <span>
+                                {classItem.recurrence_desc || "Sem recorrência informada"}
+                              </span>
+                            </div>
+                            <div className="gestao-contracts__linked-class-meta">
+                              <span>{`${classItem.lessons_completed ?? 0}/${classItem.lessons_total ?? 0} aulas`}</span>
+                              <span className={classItem.deleted_at ? "is-inactive" : "is-active"}>
+                                {classItem.deleted_at ? "inativa" : "ativa"}
+                              </span>
+                            </div>
+                          </button>
+
+                          {isExpanded ? (
+                            <div className="gestao-contracts__linked-lesson-box">
+                              {loadingContractClassId === classItem.id ? (
+                                <p>Carregando aulas da turma...</p>
+                              ) : lessons.length ? (
+                                <ul className="gestao-contracts__linked-lesson-list">
+                                  {lessons.map((lesson) => {
+                                    const status = getLessonStatusPresentation(lesson);
+                                    return (
+                                      <li key={lesson.id}>
+                                        <div className="gestao-contracts__linked-lesson-main">
+                                          <strong>{formatDate(lesson.lesson_date)}</strong>
+                                          <span>
+                                            {lesson.subject?.trim()
+                                              ? lesson.subject
+                                              : "Assunto ainda não definido"}
+                                          </span>
+                                        </div>
+                                        <span className={`gestao-contracts__lesson-status ${buildLessonStatusClassName(status.tone)}`}>
+                                          {status.label}
+                                        </span>
+                                      </li>
+                                    );
+                                  })}
+                                </ul>
+                              ) : (
+                                <p>Nenhuma aula cadastrada para esta turma.</p>
+                              )}
+                            </div>
+                          ) : null}
+                        </Fragment>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="gestao-contracts__expanded-placeholder-wrap">
+                    <p className="gestao-contracts__expanded-placeholder">Nenhuma turma vinculada a este contrato.</p>
+                  </div>
+                )
+              ) : null}
+            </div>
+          </div>
+        </td>
+      </tr>
     );
   }
 
@@ -412,51 +665,63 @@ export default function GestaoContratosPage() {
                 </thead>
                 <tbody>
                   {filteredContracts.map((contract) => (
-                    <tr key={contract.id}>
-                      <td>{contract.code}</td>
-                      <td>{contract.student_name}</td>
-                      <td>{contract.responsible_name}</td>
-                      <td>{contract.contract_type_name}</td>
-                      <td>{formatDate(contract.start_date)}</td>
-                      <td>{formatDate(contract.due_date)}</td>
-                      <td>{formatCurrency(contract.final_value || contract.value)}</td>
-                      <td>{contract.lessons_count ?? "—"}</td>
-                      <td>
-                        <span
-                          className={`gestao-contracts__status ${buildStatusClassName(
-                            contract.effective_status_name
-                          )}`}
-                        >
-                          {contract.effective_status_name}
-                        </span>
-                      </td>
-                      <td>
-                        <div className="gestao-contracts__actions">
-                          <button
-                            type="button"
-                            className="gestao-contracts__icon-button"
-                            onClick={() => setEditingContract(contract)}
-                            title="Visualizar / editar contrato"
+                    <Fragment key={contract.id}>
+                      <tr>
+                        <td>{contract.code}</td>
+                        <td>{contract.student_name}</td>
+                        <td>{contract.responsible_name}</td>
+                        <td>{contract.contract_type_name}</td>
+                        <td>{formatDate(contract.start_date)}</td>
+                        <td>{formatDate(contract.due_date)}</td>
+                        <td>{formatCurrency(contract.final_value || contract.value)}</td>
+                        <td>{contract.lessons_count ?? "—"}</td>
+                        <td>
+                          <span
+                            className={`gestao-contracts__status ${buildStatusClassName(
+                              contract.effective_status_name
+                            )}`}
                           >
-                            <img src={eyeIcon} alt="" aria-hidden="true" />
-                          </button>
+                            {contract.effective_status_name}
+                          </span>
+                        </td>
+                        <td>
+                          <div className="gestao-contracts__actions">
+                            <button
+                              type="button"
+                              className="gestao-contracts__icon-button"
+                              onClick={() => void handleToggleExpand(contract)}
+                              title={expandedContractId === contract.id ? "Fechar detalhes do contrato" : "Ver detalhes do contrato"}
+                            >
+                              <img src={eyeIcon} alt="" aria-hidden="true" />
+                            </button>
 
-                          <button
-                            type="button"
-                            className="gestao-contracts__icon-button"
-                            onClick={() => setClassSourceContract(contract)}
-                            title={
-                              contract.class_id
-                                ? "Este contrato já possui uma turma vinculada"
-                                : "Criar turma a partir do contrato"
-                            }
-                            disabled={Boolean(contract.class_id)}
-                          >
-                            <img src={studentIcon} alt="" aria-hidden="true" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
+                            <button
+                              type="button"
+                              className="gestao-contracts__icon-button"
+                              onClick={() => setEditingContract(contract)}
+                              title="Editar contrato"
+                            >
+                              <img src={pencilIcon} alt="" aria-hidden="true" />
+                            </button>
+
+                            <button
+                              type="button"
+                              className="gestao-contracts__icon-button"
+                              onClick={() => setClassSourceContract(contract)}
+                              title={
+                                contract.class_id
+                                  ? "Este contrato já possui uma turma vinculada"
+                                  : "Criar turma a partir do contrato"
+                              }
+                              disabled={Boolean(contract.class_id)}
+                            >
+                              <img src={studentIcon} alt="" aria-hidden="true" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                      {expandedContractId === contract.id ? renderExpandedContract(contract) : null}
+                    </Fragment>
                   ))}
                 </tbody>
               </table>

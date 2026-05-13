@@ -5,6 +5,7 @@ import ClassModal, {
 } from "../components/gestao/ClassModal";
 import ClassStudentsModal from "../components/gestao/ClassStudentsModal";
 import TeacherAssignmentModal from "../components/gestao/TeacherAssignmentModal";
+import LessonEditorModal from "../components/gestao/LessonEditorModal";
 
 import {
   addStudent,
@@ -19,10 +20,22 @@ import {
 import {
 } from "../services/professors";
 import {
+  addStudentToLesson,
+  createLesson,
+  deleteLesson,
+  fetchLessonStudents,
+  fetchLessonStatuses,
   fetchLessonsByClass,
+  removeStudentFromLesson,
   type Lesson,
+  type LessonPayload,
+  type LessonStatusOption,
+  updateLesson,
+  updateLessonStatus,
 } from "../services/lessons";
 import { useGestaoData } from "../context/GestaoDataContext";
+import { getLessonStatusPresentation } from "../utils/lessonStatus";
+import type { StudentRow } from "../services/students";
 
 import eyeIcon from "../assets/icons/eye-show-svgrepo-com.svg";
 import pencilIcon from "../assets/icons/pencil-svgrepo-com.svg";
@@ -40,6 +53,7 @@ type ClassDetails = {
 
 export default function GestaoTurmasPage() {
   const [search, setSearch] = useState("");
+  const [lessonOrder, setLessonOrder] = useState<"name" | "closest" | "farthest">("name");
   const [loading, setLoading] = useState(true);
   const [feedback, setFeedback] = useState("");
   const [createOpen, setCreateOpen] = useState(false);
@@ -49,17 +63,16 @@ export default function GestaoTurmasPage() {
   const [expandedClassId, setExpandedClassId] = useState<number | null>(null);
   const [detailsLoadingId, setDetailsLoadingId] = useState<number | null>(null);
   const [classStudentsLoadingId, setClassStudentsLoadingId] = useState<number | null>(null);
-  const [studentCounts, setStudentCounts] = useState<Record<number, number>>({});
+  const [lessonStudentsLoading, setLessonStudentsLoading] = useState(false);
   const [detailsByClass, setDetailsByClass] = useState<Record<number, ClassDetails>>({});
+  const [lessonStatuses, setLessonStatuses] = useState<LessonStatusOption[]>([]);
+  const [editingLesson, setEditingLesson] = useState<Lesson | null>(null);
+  const [lessonStudents, setLessonStudents] = useState<Record<number, StudentRow[]>>({});
   const {
     classes,
     professors,
     allProfessors,
     students,
-    hasLoadedClasses,
-    hasLoadedProfessors,
-    hasLoadedAllProfessors,
-    hasLoadedStudents,
     loadClasses,
     loadProfessors,
     loadAllProfessors,
@@ -69,77 +82,57 @@ export default function GestaoTurmasPage() {
     invalidateStudentClassLinks,
   } = useGestaoData();
 
-  async function load() {
-    try {
-      await Promise.all([
-        loadClasses(),
-        loadProfessors(),
-        loadAllProfessors(),
-      ]);
-    } finally {
-      setLoading(false);
-    }
-  }
-
   useEffect(() => {
-    if (hasLoadedClasses && hasLoadedProfessors && hasLoadedAllProfessors) {
-      setLoading(false);
-      void load();
-      return;
-    }
-
-    setLoading(true);
-    void load();
-  }, [hasLoadedAllProfessors, hasLoadedClasses, hasLoadedProfessors]);
-
-  useEffect(() => {
-    if (!classes.length) return;
-
-    const classIdsWithoutCount = classes
-      .map((classItem) => classItem.id)
-      .filter((classId) => studentCounts[classId] === undefined);
-
-    if (!classIdsWithoutCount.length) return;
-
     let cancelled = false;
 
-    void Promise.allSettled(
-      classIdsWithoutCount.map(async (classId) => {
-        const classStudents = await fetchClassStudents(classId);
-        return {
-          classId,
-          count: classStudents.length,
-        };
-      })
-    ).then((results) => {
-      if (cancelled) return;
-
-      const nextCounts: Record<number, number> = {};
-
-      results.forEach((result) => {
-        if (result.status !== "fulfilled") return;
-        nextCounts[result.value.classId] = result.value.count;
-      });
-
-      if (Object.keys(nextCounts).length) {
-        setStudentCounts((current) => ({
-          ...current,
-          ...nextCounts,
-        }));
+    async function load() {
+      setLoading(true);
+      try {
+        await Promise.all([
+          loadClasses(),
+          loadProfessors(),
+          loadAllProfessors(),
+        ]);
+        const statuses = await fetchLessonStatuses();
+        if (!cancelled) {
+          setLessonStatuses(statuses);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
-    });
+    }
+
+    void load();
 
     return () => {
       cancelled = true;
     };
-  }, [classes, studentCounts]);
+  }, [loadAllProfessors, loadClasses, loadProfessors]);
 
   const filtered = useMemo(() => {
     const term = search.toLowerCase();
-    return classes.filter((c) =>
+    const base = classes.filter((c) =>
       c.name.toLowerCase().includes(term)
     );
-  }, [classes, search]);
+
+    return [...base].sort((left, right) => {
+      if (lessonOrder === "closest") {
+        const leftRemaining = (left.lessons_total ?? 0) - (left.lessons_completed ?? 0);
+        const rightRemaining = (right.lessons_total ?? 0) - (right.lessons_completed ?? 0);
+        if (leftRemaining !== rightRemaining) return leftRemaining - rightRemaining;
+      }
+
+      if (lessonOrder === "farthest") {
+        const leftRemaining = (left.lessons_total ?? 0) - (left.lessons_completed ?? 0);
+        const rightRemaining = (right.lessons_total ?? 0) - (right.lessons_completed ?? 0);
+        if (leftRemaining !== rightRemaining) return rightRemaining - leftRemaining;
+      }
+
+      return left.name.localeCompare(right.name);
+    });
+  }, [classes, lessonOrder, search]);
 
   const professorNames = useMemo(() => {
     return new Map(allProfessors.map((professor) => [professor.id, professor.nome]));
@@ -150,11 +143,6 @@ export default function GestaoTurmasPage() {
     await deleteClass(id);
     removeClass(id);
     setDetailsByClass((current) => {
-      const next = { ...current };
-      delete next[id];
-      return next;
-    });
-    setStudentCounts((current) => {
       const next = { ...current };
       delete next[id];
       return next;
@@ -222,6 +210,140 @@ export default function GestaoTurmasPage() {
     });
   }
 
+  async function handleCreateSingleLesson(payload: {
+    class_id: number;
+    teacher_id?: number | null;
+    subject?: string;
+    vocabulary?: string;
+    balance?: string;
+    notes?: string;
+    lesson_date: string;
+  }) {
+    await createLesson(payload);
+
+    const lessons = await fetchLessonsByClass(payload.class_id);
+    setDetailsByClass((current) => ({
+      ...current,
+      [payload.class_id]: {
+        students: current[payload.class_id]?.students ?? [],
+        lessons,
+        lessonsLoaded: true,
+      },
+    }));
+    setFeedback("Aula avulsa adicionada com sucesso.");
+  }
+
+  async function refreshClassLessons(classId: number) {
+    const lessons = await fetchLessonsByClass(classId);
+    setDetailsByClass((current) => ({
+      ...current,
+      [classId]: {
+        students: current[classId]?.students ?? [],
+        lessons,
+        lessonsLoaded: true,
+      },
+    }));
+    return lessons;
+  }
+
+  async function handleCreateRecurringLessons(payloads: LessonPayload[]) {
+    if (!payloads.length) return;
+    await Promise.all(payloads.map((payload) => createLesson(payload)));
+    await refreshClassLessons(payloads[0].class_id);
+    setFeedback("Aulas extras adicionadas com sucesso.");
+  }
+
+  async function handleUpdateLesson(
+    lessonId: number,
+    payload: LessonPayload,
+    statusId: number
+  ) {
+    await updateLesson(lessonId, payload);
+    await updateLessonStatus(lessonId, statusId);
+
+    setDetailsByClass((current) => {
+      const optimisticLessons = (current[payload.class_id]?.lessons ?? []).map((lesson) =>
+          lesson.id === lessonId
+            ? {
+                ...lesson,
+                teacher_id: payload.teacher_id ?? null,
+                subject: payload.subject,
+                vocabulary: payload.vocabulary,
+                balance: payload.balance,
+                notes: payload.notes,
+                lesson_date: payload.lesson_date,
+                status_id: statusId,
+                status_name:
+                  lessonStatuses.find((status) => status.id === statusId)?.nome_status ??
+                  lesson.status_name,
+              }
+            : lesson
+      );
+
+      return {
+        ...current,
+        [payload.class_id]: {
+          students: current[payload.class_id]?.students ?? [],
+          lessons: optimisticLessons,
+          lessonsLoaded: true,
+        },
+      };
+    });
+
+    try {
+      await refreshClassLessons(payload.class_id);
+    } catch (error) {
+      console.error("Erro ao sincronizar aulas após edição:", error);
+    }
+    setFeedback("Aula atualizada com sucesso.");
+  }
+
+  async function handleDeleteLesson(classId: number, lessonId: number) {
+    await deleteLesson(lessonId);
+    await refreshClassLessons(classId);
+    setLessonStudents((current) => {
+      const next = { ...current };
+      delete next[lessonId];
+      return next;
+    });
+    setFeedback("Aula removida com sucesso.");
+  }
+
+  async function handleOpenLessonEditor(classId: number, lesson: Lesson) {
+    setEditingLesson(lesson);
+    setLessonStudentsLoading(true);
+
+    try {
+      await loadStudents();
+      const linkedStudents = await fetchLessonStudents(lesson.id);
+      setLessonStudents((current) => ({
+        ...current,
+        [lesson.id]: linkedStudents,
+      }));
+      await refreshClassLessons(classId);
+    } finally {
+      setLessonStudentsLoading(false);
+    }
+  }
+
+  async function handleAddStudentToLesson(lessonId: number, studentId: number) {
+    await addStudentToLesson(lessonId, studentId);
+    const linkedStudents = await fetchLessonStudents(lessonId);
+    setLessonStudents((current) => ({
+      ...current,
+      [lessonId]: linkedStudents,
+    }));
+  }
+
+  async function handleRemoveStudentFromLesson(lessonId: number, studentId: number) {
+    await removeStudentFromLesson(lessonId, studentId);
+    const linkedStudents = await fetchLessonStudents(lessonId);
+    setLessonStudents((current) => ({
+      ...current,
+      [lessonId]: linkedStudents,
+    }));
+  }
+
   async function handleToggleExpand(classItem: Class) {
     if (expandedClassId === classItem.id) {
       setExpandedClassId(null);
@@ -229,9 +351,6 @@ export default function GestaoTurmasPage() {
     }
 
     setExpandedClassId(classItem.id);
-
-    if (detailsByClass[classItem.id]?.lessonsLoaded) return;
-
     setDetailsLoadingId(classItem.id);
 
     try {
@@ -250,10 +369,6 @@ export default function GestaoTurmasPage() {
           lessons,
           lessonsLoaded: true,
         },
-      }));
-      setStudentCounts((current) => ({
-        ...current,
-        [classItem.id]: students.length,
       }));
     } catch (error) {
       console.error("Erro ao carregar detalhes da turma:", error);
@@ -288,10 +403,6 @@ export default function GestaoTurmasPage() {
           lessons: current[classItem.id]?.lessons ?? [],
           lessonsLoaded: current[classItem.id]?.lessonsLoaded ?? false,
         },
-      }));
-      setStudentCounts((current) => ({
-        ...current,
-        [classItem.id]: students.length,
       }));
 
       return students;
@@ -331,24 +442,46 @@ export default function GestaoTurmasPage() {
         lessonsLoaded: current[classId]?.lessonsLoaded ?? false,
       },
     }));
-    setStudentCounts((current) => ({
-      ...current,
-      [classId]: refreshedStudents.length,
-    }));
     invalidateStudentClassLinks();
 
     setFeedback("Vínculos de alunos atualizados com sucesso.");
   }
 
+  async function handleStartEditClass(classItem: Class) {
+    setEditingClass(classItem);
+    setDetailsLoadingId(classItem.id);
+
+    try {
+      const students = detailsByClass[classItem.id]?.students ?? await fetchClassStudents(classItem.id);
+      const lessons = await fetchLessonsByClass(classItem.id);
+
+      setDetailsByClass((current) => ({
+        ...current,
+        [classItem.id]: {
+          students,
+          lessons,
+          lessonsLoaded: true,
+        },
+      }));
+    } catch (error) {
+      console.error("Erro ao preparar edição da turma:", error);
+      setFeedback("Nao foi possível carregar as aulas atuais desta turma.");
+    } finally {
+      setDetailsLoadingId(null);
+    }
+  }
+
   function formatLessonDate(dateValue: string) {
-    const date = new Date(dateValue);
+    const normalized = dateValue.replace(" ", "T");
+    const datePart = normalized.slice(0, 10);
+    const timePart = normalized.slice(11, 16);
+    const [year, month, day] = datePart.split("-");
 
-    if (Number.isNaN(date.getTime())) return dateValue;
+    if (!year || !month || !day || !timePart) {
+      return dateValue;
+    }
 
-    return new Intl.DateTimeFormat("pt-BR", {
-      dateStyle: "short",
-      timeStyle: "short",
-    }).format(date);
+    return `${day}/${month}/${year}, ${timePart}`;
   }
 
   return (
@@ -357,7 +490,7 @@ export default function GestaoTurmasPage() {
         {feedback ? (
           <div className="gestao-turmas__feedback">
             <p>{feedback}</p>
-            <button type="button" onClick={() => setFeedback("")}>
+            <button type="button" onClick={() => setFeedback("")} title="Fechar aviso" aria-label="Fechar aviso">
               ×
             </button>
           </div>
@@ -386,6 +519,17 @@ export default function GestaoTurmasPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
+          <select
+            className="gestao-turmas__order-select"
+            value={lessonOrder}
+            onChange={(event) =>
+              setLessonOrder(event.target.value as "name" | "closest" | "farthest")
+            }
+          >
+            <option value="name">Ordenar por nome</option>
+            <option value="closest">Aulas próximas do máximo</option>
+            <option value="farthest">Aulas distantes do máximo</option>
+          </select>
         </div>
 
         <section className="gestao-professores__table-card">
@@ -402,6 +546,7 @@ export default function GestaoTurmasPage() {
                   <th>Horário</th>
                   <th>Professor</th>
                   <th>Alunos</th>
+                  <th>Aulas</th>
                   <th>Ações</th>
                 </tr>
               </thead>
@@ -409,13 +554,13 @@ export default function GestaoTurmasPage() {
               <tbody>
                 {loading ? (
                   <tr>
-                    <td colSpan={6} className="gestao-professores__empty">
+                    <td colSpan={7} className="gestao-professores__empty">
                       Carregando...
                     </td>
                   </tr>
                 ) : filtered.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="gestao-professores__empty">
+                    <td colSpan={7} className="gestao-professores__empty">
                       Nenhuma turma encontrada
                     </td>
                   </tr>
@@ -437,32 +582,35 @@ export default function GestaoTurmasPage() {
                           </td>
                           <td>
                             <div className="gestao-turmas__students-cell">
-                              <button type="button" onClick={() => void handleManageStudents(c)}>
+                              <button type="button" onClick={() => void handleManageStudents(c)} title="Gerenciar alunos" aria-label="Gerenciar alunos">
                                 <img src={userPlusIcon} alt="Gerenciar alunos" />
                               </button>
                               <span className="gestao-turmas__students-count">
-                                {studentCounts[c.id] ?? "—"}
+                                {c.student_count ?? "—"}
                               </span>
                             </div>
                           </td>
                           <td>
+                            {`${c.lessons_completed ?? 0}/${c.lessons_total ?? 0}`}
+                          </td>
+                          <td>
                             <div className="gestao-professores__actions">
-                              <button type="button" onClick={() => handleToggleExpand(c)}>
+                              <button type="button" onClick={() => handleToggleExpand(c)} title={isExpanded ? "Ocultar detalhes da turma" : "Visualizar turma"} aria-label={isExpanded ? "Ocultar detalhes da turma" : "Visualizar turma"}>
                                 <img
                                   src={eyeIcon}
                                   alt={isExpanded ? "Ocultar detalhes da turma" : "Visualizar turma"}
                                 />
                               </button>
 
-                              <button type="button" onClick={() => setEditingClass(c)}>
+                              <button type="button" onClick={() => void handleStartEditClass(c)} title="Editar turma" aria-label="Editar turma">
                                 <img src={pencilIcon} alt="Editar turma" />
                               </button>
 
-                              <button type="button" onClick={() => setTeacherClass(c)}>
+                              <button type="button" onClick={() => setTeacherClass(c)} title="Alterar professor" aria-label="Alterar professor">
                                 <img src={teacherIcon} alt="Alterar professor" />
                               </button>
 
-                              <button type="button" onClick={() => handleDelete(c.id)}>
+                              <button type="button" onClick={() => handleDelete(c.id)} title="Encerrar turma" aria-label="Encerrar turma">
                                 <img
                                   className="gestao-professores__trash-icon"
                                   src={trashIcon}
@@ -475,7 +623,7 @@ export default function GestaoTurmasPage() {
 
                         {isExpanded ? (
                           <tr className="gestao-turmas__details-row">
-                            <td colSpan={6}>
+                            <td colSpan={7}>
                               <div className="gestao-turmas__details-card">
                                 {detailsLoadingId === c.id ? (
                                   <p>Carregando detalhes da turma...</p>
@@ -514,7 +662,7 @@ export default function GestaoTurmasPage() {
                                         <ul className="gestao-turmas__detail-list">
                                           {details.lessons.map((lesson) => (
                                             <li key={lesson.id}>
-                                              <div>
+                                              <div className="gestao-turmas__lesson-main">
                                                 <strong>{formatLessonDate(lesson.lesson_date)}</strong>
                                                 <span>
                                                   {lesson.subject?.trim()
@@ -522,9 +670,34 @@ export default function GestaoTurmasPage() {
                                                     : "Assunto ainda nao definido"}
                                                 </span>
                                               </div>
-                                              <span className="gestao-turmas__status-pill">
-                                                {lesson.status_name ?? `Status ${lesson.status_id}`}
-                                              </span>
+                                              {(() => {
+                                                const status = getLessonStatusPresentation(lesson);
+                                                return (
+                                                  <div className="gestao-turmas__lesson-side">
+                                                    <span className={`gestao-turmas__status-pill is-${status.tone}`}>
+                                                      {status.label}
+                                                    </span>
+                                                    <button
+                                                      type="button"
+                                                      className="gestao-turmas__lesson-action"
+                                                      title="Editar aula"
+                                                      aria-label="Editar aula"
+                                                      onClick={() => void handleOpenLessonEditor(c.id, lesson)}
+                                                    >
+                                                      <img src={pencilIcon} alt="Editar aula" />
+                                                    </button>
+                                                    <button
+                                                      type="button"
+                                                      className="gestao-turmas__lesson-action is-danger"
+                                                      title="Excluir aula"
+                                                      aria-label="Excluir aula"
+                                                      onClick={() => void handleDeleteLesson(c.id, lesson.id)}
+                                                    >
+                                                      <img src={trashIcon} alt="Excluir aula" />
+                                                    </button>
+                                                  </div>
+                                                );
+                                              })()}
                                             </li>
                                           ))}
                                         </ul>
@@ -559,6 +732,7 @@ export default function GestaoTurmasPage() {
           open={Boolean(editingClass)}
           mode="edit"
           professors={professors}
+          classId={editingClass?.id}
           initialValues={
             editingClass
               ? {
@@ -571,6 +745,16 @@ export default function GestaoTurmasPage() {
           }
           onClose={() => setEditingClass(null)}
           onSubmit={handleEdit}
+          existingLessons={editingClass ? detailsByClass[editingClass.id]?.lessons ?? [] : []}
+          lessonStatuses={lessonStatuses}
+          onCreateSingleLesson={handleCreateSingleLesson}
+          onCreateRecurringLessons={handleCreateRecurringLessons}
+          onUpdateLesson={handleUpdateLesson}
+          onDeleteLesson={(lessonId) =>
+            editingClass
+              ? handleDeleteLesson(editingClass.id, lessonId)
+              : Promise.resolve()
+          }
         />
 
         <TeacherAssignmentModal
@@ -592,11 +776,29 @@ export default function GestaoTurmasPage() {
               : []
           }
           loading={
-            (studentClass ? classStudentsLoadingId === studentClass.id : false) ||
-            !hasLoadedStudents
+            studentClass ? classStudentsLoadingId === studentClass.id : false
           }
           onClose={() => setStudentClass(null)}
           onSubmit={handleStudentAssignments}
+        />
+
+        <LessonEditorModal
+          open={Boolean(editingLesson)}
+          lesson={editingLesson}
+          professors={professors}
+          lessonStatuses={lessonStatuses}
+          allStudents={students}
+          linkedStudents={editingLesson ? (lessonStudents[editingLesson.id] ?? []) : []}
+          loadingStudents={lessonStudentsLoading}
+          onClose={() => setEditingLesson(null)}
+          onSave={async (lessonId, payload, statusId) => {
+            await handleUpdateLesson(lessonId, payload, statusId);
+            const refreshedLessons = await fetchLessonsByClass(payload.class_id);
+            const refreshedLesson = refreshedLessons.find((item) => item.id === lessonId) ?? null;
+            setEditingLesson(refreshedLesson);
+          }}
+          onAddStudent={handleAddStudentToLesson}
+          onRemoveStudent={handleRemoveStudentFromLesson}
         />
       </section>
     </GestaoShell>

@@ -52,14 +52,14 @@ export default function GestaoShell({ title, children }: GestaoShellProps) {
       { key: "dashboard", label: "Dashboard", icon: dashboardIcon, path: "/gestao" },
       {
         key: "professores",
-        label: "Professores",
-        icon: bookOpenIcon,
+        label: "Usuários",
+        icon: userGroupIcon,
         path: "/gestao/professores",
       },
       {
         key: "alunos",
         label: "Alunos",
-        icon: userGroupIcon,
+        icon: studentIcon,
         path: "/gestao/alunos",
       },
       {
@@ -71,7 +71,7 @@ export default function GestaoShell({ title, children }: GestaoShellProps) {
       {
         key: "turmas",
         label: "Turmas",
-        icon: studentIcon,
+        icon: bookOpenIcon,
         path: "/gestao/turmas",
       },
       {

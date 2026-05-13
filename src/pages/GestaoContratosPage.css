@@ -259,6 +259,231 @@
   cursor: not-allowed;
 }
 
+.gestao-contracts__expanded-row td {
+  padding: 0;
+  border-bottom: none;
+}
+
+.gestao-contracts__expanded-card {
+  margin: 0 0 12px;
+  padding: 22px 20px;
+  border: 1px solid #e8edf6;
+  border-radius: 20px;
+  background: #fbfcff;
+}
+
+.gestao-contracts__expanded-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.gestao-contracts__expanded-section {
+  border: 1px solid #edf1f7;
+  border-radius: 18px;
+  background: #ffffff;
+  padding: 18px;
+}
+
+.gestao-contracts__expanded-section h4 {
+  margin: 0 0 14px;
+  font-size: 1.02rem;
+  color: #111827;
+}
+
+.gestao-contracts__expanded-section ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 10px;
+}
+
+.gestao-contracts__expanded-section li {
+  color: #4b5563;
+  line-height: 1.4;
+}
+
+.gestao-contracts__expanded-section strong {
+  color: #111827;
+}
+
+.gestao-contracts__expanded-placeholder {
+  margin: 0;
+  color: #60708f;
+}
+
+.gestao-contracts__expanded-fullwidth {
+  margin-top: 18px;
+}
+
+.gestao-contracts__collapse-header {
+  width: 100%;
+  border: 1px solid #e8edf6;
+  border-radius: 18px;
+  background: #f7faff;
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.gestao-contracts__collapse-header h4 {
+  margin: 0;
+  font-size: 1.05rem;
+  color: #111827;
+}
+
+.gestao-contracts__collapse-header p {
+  margin: 6px 0 0;
+  color: #60708f;
+}
+
+.gestao-contracts__collapse-header span {
+  font-size: 1.5rem;
+  color: #111827;
+  flex-shrink: 0;
+}
+
+.gestao-contracts__linked-class-list {
+  margin-top: 16px;
+  display: grid;
+  gap: 12px;
+}
+
+.gestao-contracts__linked-class-row {
+  width: 100%;
+  border: 1px solid #e8edf6;
+  border-radius: 18px;
+  background: #ffffff;
+  padding: 16px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.gestao-contracts__linked-class-row strong {
+  display: block;
+  color: #111827;
+}
+
+.gestao-contracts__linked-class-row span {
+  display: block;
+  margin-top: 6px;
+  color: #60708f;
+}
+
+.gestao-contracts__linked-class-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.gestao-contracts__linked-class-meta .is-active,
+.gestao-contracts__linked-class-meta .is-inactive {
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.gestao-contracts__linked-class-meta .is-active {
+  background: #ecfdf3;
+  color: #027a48;
+}
+
+.gestao-contracts__linked-class-meta .is-inactive {
+  background: #f3f4f6;
+  color: #667085;
+}
+
+.gestao-contracts__linked-lesson-box {
+  border: 1px solid #edf1f7;
+  border-radius: 18px;
+  background: #fff;
+  padding: 16px 18px;
+}
+
+.gestao-contracts__linked-lesson-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.gestao-contracts__linked-lesson-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  border: 1px solid #edf1f7;
+  border-radius: 16px;
+  padding: 14px 16px;
+}
+
+.gestao-contracts__linked-lesson-main strong {
+  display: block;
+  color: #111827;
+}
+
+.gestao-contracts__linked-lesson-main span {
+  display: block;
+  margin-top: 6px;
+  color: #60708f;
+}
+
+.gestao-contracts__lesson-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.gestao-contracts__lesson-status.is-success {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.gestao-contracts__lesson-status.is-warning {
+  background: #fef3c7;
+  color: #a16207;
+}
+
+.gestao-contracts__lesson-status.is-danger {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.gestao-contracts__lesson-status.is-info {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.gestao-contracts__lesson-status.is-neutral {
+  background: #eff6ff;
+  color: #64748b;
+}
+
+.gestao-contracts__expanded-placeholder-wrap {
+  margin-top: 16px;
+  border: 1px dashed #d7deeb;
+  border-radius: 18px;
+  padding: 18px;
+  background: #ffffff;
+}
+
 .gestao-contracts__empty {
   padding: 42px 20px;
   text-align: center;
@@ -277,5 +502,20 @@
 
   .gestao-contracts__summary {
     grid-template-columns: 1fr;
+  }
+
+  .gestao-contracts__expanded-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .gestao-contracts__linked-class-row,
+  .gestao-contracts__linked-lesson-list li {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .gestao-contracts__linked-class-meta {
+    width: 100%;
+    justify-content: space-between;
   }
 }

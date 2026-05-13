@@ -88,6 +88,10 @@
   color: #374151;
 }
 
+.customer-modal__grid label.is-invalid span {
+  color: #b91c1c;
+}
+
 .customer-modal__grid input,
 .customer-modal__grid textarea {
   border: 1px solid #d1d5db;
@@ -95,6 +99,12 @@
   padding: 12px 14px;
   font-size: 1rem;
   background: #fff;
+}
+
+.customer-modal__grid label.is-invalid input,
+.customer-modal__grid label.is-invalid textarea {
+  border-color: #fca5a5;
+  background: #fff5f5;
 }
 
 .customer-modal__grid input {
