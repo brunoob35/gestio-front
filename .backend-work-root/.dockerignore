@@ -1,0 +1,8 @@
+.git
+.idea
+.env
+TreeHouse-API
+tmp
+tmp-dashboard-seed
+coverage
+dist
