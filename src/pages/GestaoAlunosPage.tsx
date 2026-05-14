@@ -16,6 +16,13 @@ import {
   updateStudent,
 } from "../services/students";
 import {
+  createCustomer,
+  fetchCustomer,
+  fetchCustomerAddresses,
+  fetchCustomerStudents,
+  updateCustomer,
+} from "../services/customers";
+import {
   addStudentToLesson,
   deleteLesson,
   fetchLessonStatuses,
@@ -46,12 +53,15 @@ type LessonState = Record<number, Lesson[]>;
 export default function GestaoAlunosPage() {
   const {
     students,
+    customers,
     allProfessors,
     studentClassLinksVersion,
     loadClasses,
+    loadCustomers,
     loadStudents,
     loadAllProfessors,
     upsertStudent,
+    upsertCustomer,
     removeStudent,
     invalidateStudentClassLinks,
   } = useGestaoData();
@@ -81,8 +91,9 @@ export default function GestaoAlunosPage() {
     async function load() {
       setLoading(true);
       try {
-        const [, , statuses] = await Promise.all([
+        const [, , , statuses] = await Promise.all([
           loadStudents(),
+          loadCustomers(),
           loadAllProfessors(),
           fetchLessonStatuses(),
         ]);
@@ -101,7 +112,7 @@ export default function GestaoAlunosPage() {
     return () => {
       cancelled = true;
     };
-  }, [loadAllProfessors, loadStudents]);
+  }, [loadAllProfessors, loadCustomers, loadStudents]);
 
   const filteredStudents = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -147,6 +158,137 @@ export default function GestaoAlunosPage() {
     return new Map(allProfessors.map((professor) => [professor.id, professor.nome]));
   }, [allProfessors]);
 
+  function normalizeDigits(value?: string) {
+    return String(value ?? "").replace(/\D/g, "");
+  }
+
+  function inferResponsibleCustomerId(student?: StudentRow | null) {
+    if (!student?.responsavel) return "";
+
+    const studentPhone = normalizeDigits(student.responsavelTelefone);
+    const exactMatch = customers.find((customer) => {
+      if (customer.nome !== student.responsavel) return false;
+      if (!studentPhone) return true;
+      return normalizeDigits(customer.telefone) === studentPhone;
+    });
+
+    if (exactMatch) return String(exactMatch.id);
+
+    const uniqueByName = customers.filter((customer) => customer.nome === student.responsavel);
+    return uniqueByName.length === 1 ? String(uniqueByName[0].id) : "";
+  }
+
+  async function syncStudentResponsible(
+    student: Pick<StudentRow, "id" | "nome" | "nascimento">,
+    previousCustomerId?: number,
+    nextCustomerId?: number
+  ) {
+    const targetPreviousId =
+      previousCustomerId && previousCustomerId !== nextCustomerId ? previousCustomerId : undefined;
+    const targetNextId = nextCustomerId || undefined;
+
+    async function updateCustomerStudentsList(
+      customerID: number,
+      updater: (linkedStudents: StudentRow[]) => StudentRow[]
+    ) {
+      const [customer, linkedStudents, addresses] = await Promise.all([
+        fetchCustomer(customerID),
+        fetchCustomerStudents(customerID),
+        fetchCustomerAddresses(customerID),
+      ]);
+
+      const nextStudents = updater(linkedStudents);
+
+      await updateCustomer(customerID, {
+        nome: customer.nome,
+        cpf: customer.cpf,
+        rg: customer.rg,
+        email: customer.email,
+        telefone: customer.telefone,
+        enderecos: addresses.map((address) => ({
+          cep: address.cep,
+          rua: address.rua,
+          numero: address.numero,
+          bairro: address.bairro,
+          cidade: address.cidade,
+          estado: address.estado,
+          pais: address.pais,
+          complemento: address.complemento,
+        })),
+        students: nextStudents.map((linkedStudent) => ({
+          id: linkedStudent.id,
+          nome: linkedStudent.nome,
+          ...(linkedStudent.nascimento
+            ? { nascimento: `${String(linkedStudent.nascimento).slice(0, 10)}T00:00:00Z` }
+            : {}),
+        })),
+        ativo: customer.status === "ativo",
+      });
+    }
+
+    if (targetPreviousId) {
+      await updateCustomerStudentsList(targetPreviousId, (linkedStudents) =>
+        linkedStudents.filter((linkedStudent) => linkedStudent.id !== student.id)
+      );
+    }
+
+    if (targetNextId) {
+      await updateCustomerStudentsList(targetNextId, (linkedStudents) => {
+        if (linkedStudents.some((linkedStudent) => linkedStudent.id === student.id)) {
+          return linkedStudents;
+        }
+
+        return [
+          ...linkedStudents,
+          {
+            id: student.id,
+            code: `A${String(student.id).padStart(3, "0")}`,
+            nome: student.nome,
+            nascimento: student.nascimento,
+            status: "ativo",
+          },
+        ];
+      });
+    }
+  }
+
+  async function createResponsibleCustomerForStudent(
+    student: Pick<StudentRow, "id" | "nome" | "nascimento">,
+    values: StudentFormValues
+  ) {
+    const createdCustomer = await createCustomer({
+      nome: values.responsible_nome,
+      cpf: values.responsible_cpf,
+      rg: values.responsible_rg,
+      email: values.responsible_email,
+      telefone: values.responsible_telefone,
+      enderecos: [
+        {
+          cep: values.responsible_cep,
+          rua: values.responsible_rua,
+          numero: values.responsible_numero,
+          bairro: values.responsible_bairro,
+          cidade: values.responsible_cidade,
+          estado: values.responsible_estado,
+          pais: values.responsible_pais || "Brasil",
+          complemento: values.responsible_complemento,
+        },
+      ],
+      students: [
+        {
+          id: student.id,
+          nome: student.nome,
+          ...(student.nascimento
+            ? { nascimento: `${String(student.nascimento).slice(0, 10)}T00:00:00Z` }
+            : {}),
+        },
+      ],
+    });
+
+    upsertCustomer(createdCustomer);
+    return createdCustomer;
+  }
+
   async function loadStudentClasses(studentID: number, options?: { force?: boolean }) {
     const force = options?.force ?? false;
 
@@ -186,19 +328,94 @@ export default function GestaoAlunosPage() {
       ...(values.nascimento ? { nascimento: `${values.nascimento}T00:00:00Z` } : {}),
     });
 
-    upsertStudent(created);
-    setSelectedStudentId(created.id);
+    if (values.responsible_mode === "new") {
+      await createResponsibleCustomerForStudent(
+        {
+          id: created.id,
+          nome: created.nome,
+          nascimento: created.nascimento,
+        },
+        values
+      );
+    } else {
+      const responsibleCustomerId = values.responsible_customer_id
+        ? Number(values.responsible_customer_id)
+        : undefined;
+
+      if (responsibleCustomerId) {
+        await syncStudentResponsible(
+          {
+            id: created.id,
+            nome: created.nome,
+            nascimento: created.nascimento,
+          },
+          undefined,
+          responsibleCustomerId
+        );
+      }
+    }
+
+    const refreshedStudents = await loadStudents({ force: true });
+    await loadCustomers({ force: true });
+    const refreshedStudent = refreshedStudents.find((student) => student.id === created.id) ?? created;
+    upsertStudent(refreshedStudent);
+    setSelectedStudentId(refreshedStudent.id);
   }
 
   async function handleEdit(values: StudentFormValues) {
     if (!editingStudent) return;
+
+    const previousResponsibleCustomerId = inferResponsibleCustomerId(editingStudent);
 
     const updated = await updateStudent(editingStudent.id, {
       nome: values.nome,
       ...(values.nascimento ? { nascimento: `${values.nascimento}T00:00:00Z` } : {}),
     });
 
-    upsertStudent(updated);
+    const previousCustomerId = previousResponsibleCustomerId
+      ? Number(previousResponsibleCustomerId)
+      : undefined;
+    const nextCustomerId = values.responsible_customer_id
+      ? Number(values.responsible_customer_id)
+      : undefined;
+
+    if (values.responsible_mode === "new") {
+      if (previousCustomerId) {
+        await syncStudentResponsible(
+          {
+            id: updated.id,
+            nome: updated.nome,
+            nascimento: updated.nascimento,
+          },
+          previousCustomerId,
+          undefined
+        );
+      }
+
+      await createResponsibleCustomerForStudent(
+        {
+          id: updated.id,
+          nome: updated.nome,
+          nascimento: updated.nascimento,
+        },
+        values
+      );
+    } else if (previousCustomerId !== nextCustomerId) {
+      await syncStudentResponsible(
+        {
+          id: updated.id,
+          nome: updated.nome,
+          nascimento: updated.nascimento,
+        },
+        previousCustomerId,
+        nextCustomerId
+      );
+    }
+
+    const refreshedStudents = await loadStudents({ force: true });
+    await loadCustomers({ force: true });
+    const refreshedStudent = refreshedStudents.find((student) => student.id === editingStudent.id) ?? updated;
+    upsertStudent(refreshedStudent);
     setEditingStudent(null);
   }
 
@@ -680,6 +897,7 @@ export default function GestaoAlunosPage() {
         <StudentModal
           open={createOpen}
           mode="create"
+          availableCustomers={customers}
           onClose={() => setCreateOpen(false)}
           onSubmit={handleCreate}
         />
@@ -687,11 +905,20 @@ export default function GestaoAlunosPage() {
         <StudentModal
           open={Boolean(editingStudent)}
           mode="edit"
+          availableCustomers={customers}
           initialValues={
             editingStudent
               ? {
                   nome: editingStudent.nome,
                   nascimento: editingStudent.nascimento?.slice(0, 10) ?? "",
+                  responsible_mode: "existing",
+                  responsible_customer_id: inferResponsibleCustomerId(editingStudent),
+                  responsible_query: (() => {
+                    const customerId = inferResponsibleCustomerId(editingStudent);
+                    if (!customerId) return "";
+                    const customer = customers.find((item) => String(item.id) === customerId);
+                    return customer ? `${customer.nome} (${customer.code})` : "";
+                  })(),
                 }
               : undefined
           }

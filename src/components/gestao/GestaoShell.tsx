@@ -28,6 +28,7 @@ type MenuItem = {
   icon: string;
   path?: string;
   isLogout?: boolean;
+  disabled?: boolean;
 };
 
 function isMenuItemActive(currentPath: string, itemPath?: string) {
@@ -91,12 +92,14 @@ export default function GestaoShell({ title, children }: GestaoShellProps) {
         label: "Relatórios",
         icon: graphIcon,
         path: "/gestao/relatorios",
+        disabled: true,
       },
       {
         key: "configuracoes",
         label: "Configurações",
         icon: settingsIcon,
         path: "/gestao/configuracoes",
+        disabled: true,
       },
     ],
     []
@@ -108,6 +111,10 @@ export default function GestaoShell({ title, children }: GestaoShellProps) {
   );
 
   function handleNavigate(item: MenuItem) {
+    if (item.disabled) {
+      return;
+    }
+
     if (item.isLogout) {
       clearToken();
       navigate("/", { replace: true });
@@ -152,9 +159,11 @@ export default function GestaoShell({ title, children }: GestaoShellProps) {
               <button
                 key={item.key}
                 type="button"
-                className={`gestao-shell__menu-item ${isActive ? "is-active" : ""}`}
+                className={`gestao-shell__menu-item ${isActive ? "is-active" : ""} ${item.disabled ? "is-disabled" : ""}`}
                 onClick={() => handleNavigate(item)}
                 title={collapsed ? item.label : undefined}
+                disabled={item.disabled}
+                aria-disabled={item.disabled}
               >
                 <img src={item.icon} alt="" aria-hidden="true" />
                 {!collapsed && <span>{item.label}</span>}

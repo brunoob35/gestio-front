@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 import { api } from "../services/api";
 import { decodeToken, saveToken } from "../services/auth";
+import dashboardIcon from "../assets/icons/dashboard-svgrepo-com.svg";
 
 import "./LoginPage.css";
 
@@ -66,7 +67,9 @@ export default function LoginPage() {
     <main className="login-page">
       <section className="login-card">
         <header className="login-header">
-          <div className="login-logo">🎓</div>
+          <div className="login-logo">
+            <img src={dashboardIcon} alt="Gestio" />
+          </div>
           <h1 className="login-title">Gestio</h1>
           <p className="login-subtitle">Sistema de Gestão Educacional</p>
         </header>
@@ -125,20 +128,6 @@ export default function LoginPage() {
           >
             Esqueci minha senha
           </button>
-        </div>
-
-        <div className="demo-box">
-          <p className="demo-title">Contas de demonstração</p>
-
-          <div className="demo-item">
-            <span className="demo-role">Gestor:</span>
-            <span>gestor@gestio.com / gestor</span>
-          </div>
-
-          <div className="demo-item">
-            <span className="demo-role">Professor:</span>
-            <span>professor@gestio.com / professor</span>
-          </div>
         </div>
       </section>
     </main>

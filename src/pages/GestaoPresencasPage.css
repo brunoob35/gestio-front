@@ -1,0 +1,628 @@
+.gestao-presencas {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.gestao-presencas__hero,
+.gestao-presencas__panel {
+  background: #ffffff;
+  border: 1px solid #e8edf6;
+  border-radius: 24px;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.04);
+}
+
+.gestao-presencas__hero {
+  padding: 26px 30px;
+}
+
+.gestao-presencas__hero h2,
+.gestao-presencas__panel-header h3,
+.gestao-presencas__modal-header h3 {
+  margin: 0;
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.gestao-presencas__hero p,
+.gestao-presencas__panel-header p {
+  margin: 8px 0 0;
+  max-width: 760px;
+  color: #60708f;
+  line-height: 1.6;
+}
+
+.gestao-presencas__error {
+  padding: 14px 16px;
+  border-radius: 18px;
+  border: 1px solid #fecaca;
+  background: #fff1f2;
+  color: #b91c1c;
+  font-weight: 600;
+}
+
+.gestao-presencas__top-grid {
+  display: grid;
+  grid-template-columns: minmax(300px, 0.78fr) minmax(0, 1.52fr);
+  gap: 22px;
+}
+
+.gestao-presencas__panel {
+  padding: 24px;
+}
+
+.gestao-presencas__panel-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.gestao-presencas__calendar-shell {
+  border: 1px solid #edf2fa;
+  border-radius: 22px;
+  padding: 14px;
+  background: #ffffff;
+  max-width: 470px;
+}
+
+.gestao-presencas__calendar-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.gestao-presencas__calendar-toolbar strong {
+  font-size: 0.98rem;
+  font-weight: 700;
+  text-transform: capitalize;
+  color: #111827;
+}
+
+.gestao-presencas__calendar-toolbar button {
+  width: 34px;
+  height: 34px;
+  border: 1px solid #dbe4f1;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #475569;
+  cursor: pointer;
+}
+
+.gestao-presencas__weekday-row {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.gestao-presencas__weekday-row span {
+  text-align: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #60708f;
+}
+
+.gestao-presencas__calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.gestao-presencas__calendar-day {
+  min-height: 50px;
+  border: 1px solid #e6ebf5;
+  border-radius: 12px;
+  background: #ffffff;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.gestao-presencas__calendar-day:hover {
+  transform: translateY(-1px);
+  border-color: #cfd8ea;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+}
+
+.gestao-presencas__calendar-day.is-outside {
+  opacity: 0.55;
+}
+
+.gestao-presencas__calendar-day.is-selected {
+  border-color: #0f172a;
+  background: #0f172a;
+  box-shadow: none;
+}
+
+.gestao-presencas__calendar-day.is-today .gestao-presencas__calendar-day-number {
+  color: #0f172a;
+}
+
+.gestao-presencas__calendar-day-number {
+  font-size: 0.94rem;
+  font-weight: 800;
+  color: #111827;
+}
+
+.gestao-presencas__calendar-day.is-selected .gestao-presencas__calendar-day-number {
+  color: #ffffff;
+}
+
+.gestao-presencas__calendar-dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 3px;
+}
+
+.gestao-presencas__calendar-dots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+}
+
+.gestao-presencas__calendar-dots .is-green {
+  background: #16a34a;
+}
+
+.gestao-presencas__calendar-dots .is-yellow {
+  background: #f59e0b;
+}
+
+.gestao-presencas__calendar-dots .is-red {
+  background: #ef4444;
+}
+
+.gestao-presencas__teacher-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+@media (min-width: 901px) {
+  .gestao-presencas__panel--day .gestao-presencas__teacher-groups {
+    max-height: 640px;
+    overflow-y: auto;
+    padding-right: 8px;
+  }
+
+  .gestao-presencas__panel--day .gestao-presencas__teacher-groups::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  .gestao-presencas__panel--day .gestao-presencas__teacher-groups::-webkit-scrollbar-track {
+    background: #f3f6fb;
+    border-radius: 999px;
+  }
+
+  .gestao-presencas__panel--day .gestao-presencas__teacher-groups::-webkit-scrollbar-thumb {
+    background: #cfd8e6;
+    border-radius: 999px;
+    border: 2px solid #f3f6fb;
+  }
+}
+
+.gestao-presencas__teacher-group {
+  border: 1px solid #edf2fa;
+  border-radius: 18px;
+  background: #fbfcff;
+  padding: 12px;
+}
+
+.gestao-presencas__teacher-header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.gestao-presencas__teacher-header h4 {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.gestao-presencas__lesson-list,
+.gestao-presencas__pending-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.gestao-presencas__lesson-card,
+.gestao-presencas__pending-card {
+  border: 1px solid #e9eef7;
+  border-radius: 16px;
+  background: #ffffff;
+  padding: 10px 14px;
+}
+
+.gestao-presencas__lesson-main,
+.gestao-presencas__pending-card {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.gestao-presencas__lesson-main {
+  align-items: stretch;
+}
+
+.gestao-presencas__lesson-copy {
+  min-width: 0;
+  flex: 1;
+}
+
+.gestao-presencas__lesson-copy strong,
+.gestao-presencas__pending-title strong {
+  display: block;
+  font-size: 0.98rem;
+  color: #111827;
+}
+
+.gestao-presencas__lesson-copy p,
+.gestao-presencas__pending-title span,
+.gestao-presencas__modal-note {
+  margin: 6px 0 0;
+  color: #60708f;
+}
+
+.gestao-presencas__lesson-time {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.gestao-presencas__lesson-time img,
+.gestao-presencas__pending-title img {
+  width: 16px;
+  height: 16px;
+}
+
+.gestao-presencas__lesson-copy p.is-muted {
+  font-size: 0.88rem;
+}
+
+.gestao-presencas__lesson-side {
+  min-width: 168px;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  justify-content: flex-end;
+}
+
+.gestao-presencas__status {
+  align-self: flex-start;
+  border-radius: 10px;
+  padding: 5px 8px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  line-height: 1;
+  border: 1px solid transparent;
+  margin-top: 29px;
+}
+
+.gestao-presencas__status--pending {
+  color: #1d4ed8;
+  background: #eff6ff;
+  border-color: #bfdbfe;
+}
+
+.gestao-presencas__status--overdue {
+  color: #b91c1c;
+  background: #fff7f7;
+  border-color: #f8d0d5;
+}
+
+.gestao-presencas__status--completed {
+  color: #166534;
+  background: #eefcf3;
+  border-color: #c9efd5;
+}
+
+.gestao-presencas__status--cancelled {
+  color: #b91c1c;
+  background: #fff1f2;
+  border-color: #fecdd3;
+}
+
+.gestao-presencas__status--rescheduled {
+  color: #3730a3;
+  background: #eef2ff;
+  border-color: #c7d2fe;
+}
+
+.gestao-presencas__status--reschedule-pending {
+  color: #92400e;
+  background: #fffbeb;
+  border-color: #fde68a;
+}
+
+.gestao-presencas__status--compensated {
+  color: #1d4ed8;
+  background: #eff6ff;
+  border-color: #bfdbfe;
+}
+
+.gestao-presencas__lesson-actions,
+.gestao-presencas__pending-actions,
+.gestao-presencas__modal-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.gestao-presencas__lesson-actions {
+  margin-top: 0;
+  margin-left: 0;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 4px;
+}
+
+.gestao-presencas__action,
+.gestao-presencas__modal-actions button,
+.gestao-presencas__modal-header button {
+  min-height: 40px;
+  border-radius: 12px;
+  border: 1px solid #d8e0ee;
+  background: #ffffff;
+  padding: 0 14px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #1f2937;
+  cursor: pointer;
+}
+
+.gestao-presencas__lesson-actions .gestao-presencas__action {
+  min-width: 146px;
+  min-height: 36px;
+  padding: 0 12px;
+}
+
+.gestao-presencas__action:disabled,
+.gestao-presencas__modal-actions button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.gestao-presencas__action--success {
+  border-color: #d7dfef;
+  background: #ffffff;
+  color: #18794e;
+}
+
+.gestao-presencas__action--warning {
+  border-color: #d7dfef;
+  background: #ffffff;
+  color: #a16207;
+}
+
+.gestao-presencas__action--danger {
+  border-color: #f8d0d5;
+  background: #ffffff;
+  color: #b91c1c;
+}
+
+.gestao-presencas__action--ghost {
+  background: #ffffff;
+  color: #475569;
+  border-color: #d8e0ee;
+}
+
+.gestao-presencas__pending-title {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.gestao-presencas__pending-title img {
+  margin-top: 2px;
+}
+
+.gestao-presencas__pending-copy {
+  flex: 1;
+}
+
+.gestao-presencas__pending-dates {
+  margin-top: 16px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.gestao-presencas__pending-dates div {
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: #f8faff;
+  border: 1px solid #ecf1f8;
+}
+
+.gestao-presencas__pending-dates small {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #60708f;
+  margin-bottom: 6px;
+}
+
+.gestao-presencas__pending-dates strong {
+  color: #111827;
+}
+
+.gestao-presencas__stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.gestao-presencas__pending-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.gestao-presencas__pending-heading img {
+  width: 40px;
+  height: 40px;
+  margin-top: -2px;
+}
+
+.gestao-presencas__empty-state {
+  min-height: 160px;
+  border: 1px dashed #d7dfef;
+  border-radius: 20px;
+  background: #fafcff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  text-align: center;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.gestao-presencas__modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.52);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 50;
+}
+
+.gestao-presencas__modal {
+  width: min(560px, 100%);
+  border-radius: 26px;
+  background: #ffffff;
+  border: 1px solid #e6ebf5;
+  box-shadow: 0 24px 64px rgba(15, 23, 42, 0.22);
+  padding: 24px;
+}
+
+.gestao-presencas__modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.gestao-presencas__modal-header button {
+  width: 42px;
+  padding: 0;
+  font-size: 1.6rem;
+  line-height: 1;
+}
+
+.gestao-presencas__modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.gestao-presencas__modal-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.gestao-presencas__modal-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.gestao-presencas__modal-grid input {
+  width: 100%;
+  min-height: 48px;
+  border-radius: 16px;
+  border: 1px solid #d8e0ee;
+  background: #ffffff;
+  padding: 0 14px;
+  font: inherit;
+  color: #111827;
+}
+
+.gestao-presencas__modal-actions {
+  justify-content: flex-end;
+}
+
+.gestao-presencas__modal-actions .is-primary {
+  border-color: #6a5cff;
+  background: #6a5cff;
+  color: #ffffff;
+}
+
+@media (max-width: 1180px) {
+  .gestao-presencas__top-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 900px) {
+  .gestao-presencas__stats {
+    grid-template-columns: 1fr;
+  }
+
+  .gestao-presencas__pending-card,
+  .gestao-presencas__lesson-main {
+    flex-direction: column;
+  }
+
+  .gestao-presencas__lesson-side {
+    min-width: 0;
+    width: 100%;
+    align-items: flex-start;
+    justify-content: flex-start;
+  }
+
+  .gestao-presencas__lesson-actions {
+    width: auto;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 640px) {
+  .gestao-presencas__hero,
+  .gestao-presencas__panel,
+  .gestao-presencas__modal {
+    padding: 20px;
+    border-radius: 22px;
+  }
+
+  .gestao-presencas__calendar-grid {
+    gap: 6px;
+  }
+
+  .gestao-presencas__calendar-day {
+    min-height: 46px;
+    padding: 5px;
+  }
+
+  .gestao-presencas__pending-dates,
+  .gestao-presencas__modal-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -119,6 +119,16 @@
   flex-shrink: 0;
 }
 
+.gestao-shell__menu-item.is-disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.gestao-shell__menu-item.is-disabled:hover {
+  background: transparent;
+}
+
 .gestao-shell__main {
   min-width: 0;
   flex: 1;

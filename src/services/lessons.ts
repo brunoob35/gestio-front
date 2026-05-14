@@ -12,6 +12,8 @@ export type Lesson = {
   balance?: string;
   notes?: string;
   lesson_date: string;
+  original_lesson_date?: string;
+  requested_lesson_date?: string;
   created_at?: string;
   updated_at?: string;
 };
@@ -30,6 +32,10 @@ export type LessonPayload = {
 export type LessonStatusOption = {
   id: number;
   nome_status: string;
+};
+
+export type LessonReschedulePayload = {
+  requested_lesson_date: string;
 };
 
 type RawLesson = Record<string, unknown>;
@@ -66,9 +72,17 @@ export function normalizeLesson(item: RawLesson): Lesson {
     balance: asString(item.balance) || undefined,
     notes: asString(item.notes) || undefined,
     lesson_date: asString(item.lesson_date),
+    original_lesson_date: asString(item.original_lesson_date) || undefined,
+    requested_lesson_date: asString(item.requested_lesson_date) || undefined,
     created_at: asString(item.created_at) || undefined,
     updated_at: asString(item.updated_at) || undefined,
   };
+}
+
+export async function fetchAllLessons(): Promise<Lesson[]> {
+  const response = await api.get("/lessons");
+  const data = Array.isArray(response.data) ? response.data : [];
+  return data.map((item) => normalizeLesson((item ?? {}) as RawLesson));
 }
 
 export async function fetchLessonsByClass(classID: number): Promise<Lesson[]> {
@@ -92,6 +106,24 @@ export async function updateLessonStatus(lessonID: number, statusID: number) {
     status_id: statusID,
   });
   return response.data;
+}
+
+export async function requestLessonReschedule(
+  lessonID: number,
+  payload: LessonReschedulePayload
+): Promise<Lesson> {
+  const response = await api.patch(`/lessons/${lessonID}/reschedule-request`, payload);
+  return normalizeLesson((response.data ?? {}) as RawLesson);
+}
+
+export async function approveLessonReschedule(lessonID: number): Promise<Lesson> {
+  const response = await api.patch(`/lessons/${lessonID}/reschedule-approve`, {});
+  return normalizeLesson((response.data ?? {}) as RawLesson);
+}
+
+export async function rejectLessonReschedule(lessonID: number): Promise<Lesson> {
+  const response = await api.patch(`/lessons/${lessonID}/reschedule-reject`, {});
+  return normalizeLesson((response.data ?? {}) as RawLesson);
 }
 
 export async function deleteLesson(lessonID: number) {

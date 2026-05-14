@@ -1,0 +1,47 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="32" cy="32" r="32" fill="url(#gestioGradient)" />
+  <g transform="translate(16 16)">
+    <path
+      fill-rule="evenodd"
+      clip-rule="evenodd"
+      d="M12.695 13.334H8.905C8.349 13.329 7.814 13.545 7.418 13.934C7.022 14.323 6.797 14.853 6.792 15.409V23.279C6.802 24.436 7.747 25.365 8.905 25.355H12.695C13.251 25.36 13.786 25.144 14.182 24.755C14.578 24.366 14.803 23.835 14.808 23.28V15.409C14.803 14.853 14.578 14.323 14.182 13.934C13.786 13.545 13.251 13.329 12.695 13.334Z"
+      stroke="white"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <path
+      fill-rule="evenodd"
+      clip-rule="evenodd"
+      d="M12.695 5.313H8.905C7.771 5.282 6.826 6.174 6.792 7.308V8.662C6.826 9.796 7.771 10.688 8.905 10.657H12.695C13.829 10.688 14.774 9.796 14.808 8.662V7.308C14.774 6.174 13.829 5.282 12.695 5.313Z"
+      stroke="white"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <path
+      fill-rule="evenodd"
+      clip-rule="evenodd"
+      d="M19.592 17.343H23.381C23.937 17.348 24.473 17.132 24.869 16.743C25.265 16.354 25.49 15.824 25.495 15.268V7.398C25.49 6.842 25.265 6.312 24.869 5.923C24.473 5.534 23.938 5.318 23.382 5.323H19.592C19.036 5.318 18.501 5.534 18.105 5.923C17.709 6.312 17.484 6.842 17.479 7.398V15.268C17.484 15.823 17.709 16.353 18.105 16.742C18.501 17.131 19.036 17.347 19.592 17.343Z"
+      stroke="white"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <path
+      fill-rule="evenodd"
+      clip-rule="evenodd"
+      d="M19.592 25.355H23.381C24.515 25.387 25.46 24.494 25.495 23.36V22.006C25.46 20.872 24.515 19.98 23.382 20.011H19.592C18.458 19.98 17.513 20.872 17.479 22.006V23.359C17.512 24.494 18.457 25.387 19.592 25.355Z"
+      stroke="white"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+  </g>
+  <defs>
+    <linearGradient id="gestioGradient" x1="10" y1="8" x2="54" y2="56" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#5856EB" />
+      <stop offset="1" stop-color="#6A5CFF" />
+    </linearGradient>
+  </defs>
+</svg>

@@ -7,8 +7,10 @@ import type {
 import type { ProfessorRow } from "../../services/professors";
 import {
   buildRecurrenceDescription,
+  formatDate,
   parseRecurrenceJson,
   type ClassRecurrence,
+  sortWeekdays,
   type WeekdayKey,
   weekdayOptions,
 } from "../../utils/classRecurrence";
@@ -42,6 +44,10 @@ type ClassModalProps = {
     statusId: number
   ) => Promise<void>;
   onDeleteLesson?: (lessonId: number) => Promise<void>;
+};
+
+type RecurrenceSummaryProps = {
+  recurrence: ClassRecurrence | null;
 };
 
 type LessonEditorValues = {
@@ -93,6 +99,33 @@ function formatLessonLabel(value: string) {
   const [year, month, day] = date.split("-");
   if (!year || !month || !day) return value;
   return `${day}/${month}/${year}, ${time}`;
+}
+
+function RecurrenceSummary({ recurrence }: RecurrenceSummaryProps) {
+  if (!recurrence) {
+    return (
+      <span className="class-modal__recurrence-summary is-placeholder">
+        Selecione dias da semana, inicio da recorrencia, horario e numero de aulas.
+      </span>
+    );
+  }
+
+  const dayLabels = sortWeekdays(recurrence.weekdays)
+    .map((day) => weekdayOptions.find((item) => item.key === day)?.label.slice(0, 3))
+    .filter(Boolean)
+    .join(", ");
+
+  return (
+    <span className="class-modal__recurrence-summary">
+      <span className="class-modal__recurrence-summary-segment">{dayLabels}</span>
+      <span className="class-modal__recurrence-summary-separator"> as </span>
+      <span className="class-modal__recurrence-summary-segment">{recurrence.start_time}</span>
+      <span className="class-modal__recurrence-summary-separator">, </span>
+      <span className="class-modal__recurrence-summary-segment">{recurrence.lesson_count} aulas</span>
+      <span className="class-modal__recurrence-summary-separator">, inicio </span>
+      <span className="class-modal__recurrence-summary-segment">{formatDate(recurrence.start_date)}</span>
+    </span>
+  );
 }
 
 function parseWeekday(value: string) {
@@ -529,11 +562,9 @@ export default function ClassModal({
               <div className="class-modal__recurrence-header">
                 <div>
                   <span>Recorrencia da turma *</span>
-                  <p>
-                    {recurrence
-                      ? buildRecurrenceDescription(recurrence)
-                      : "Selecione dias da semana, inicio da recorrencia, horario e numero de aulas."}
-                  </p>
+                  <div className="class-modal__recurrence-summary-wrap">
+                    <RecurrenceSummary recurrence={recurrence} />
+                  </div>
                 </div>
               </div>
 

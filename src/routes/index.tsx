@@ -11,6 +11,7 @@ import GestaoTurmasPage from "../pages/GestaoTurmasPage";
 import GestaoAlunosPage from "../pages/GestaoAlunosPage";
 import GestaoClientesPage from "../pages/GestaoClientesPage";
 import GestaoContratosPage from "../pages/GestaoContratosPage";
+import GestaoPresencasPage from "../pages/GestaoPresencasPage";
 
 import { getUserPermissions, isAuthenticated } from "../services/auth";
 
@@ -136,6 +137,15 @@ export function AppRoutes() {
         element={
           <PrivateRoute allowedPermissions={[1, 4]}>
             <GestaoContratosPage />
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/gestao/presencas"
+        element={
+          <PrivateRoute allowedPermissions={[1, 4]}>
+            <GestaoPresencasPage />
           </PrivateRoute>
         }
       />

@@ -4,6 +4,11 @@
   box-sizing: border-box;
 }
 
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
 html,
 body,
 #root {
@@ -21,4 +26,52 @@ input,
 textarea,
 select {
   font: inherit;
+  line-height: 1.35;
+  letter-spacing: normal;
+}
+
+button,
+input,
+textarea,
+select,
+option {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.contract-modal__header h2,
+.student-modal__header h2,
+.class-modal__header h2,
+.customer-modal__header h2,
+.lesson-editor__header h2,
+.teacher-modal__header h2,
+.class-students-modal__header h2,
+.recurrence-modal__header h2 {
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
+.contract-modal__grid label,
+.contract-modal__section label,
+.student-modal__grid label,
+.student-modal__section label,
+.class-modal__form label,
+.customer-modal__grid label,
+.teacher-modal__form label,
+.lesson-editor__grid label,
+.lesson-editor__students-add label {
+  min-width: 0;
+}
+
+.contract-modal__grid span,
+.contract-modal__section span,
+.student-modal__grid span,
+.student-modal__section span,
+.class-modal__form span,
+.customer-modal__grid span,
+.teacher-modal__form span,
+.lesson-editor__grid span,
+.lesson-editor__students-add span {
+  line-height: 1.35;
+  overflow-wrap: anywhere;
 }
