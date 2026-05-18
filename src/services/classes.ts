@@ -1,9 +1,24 @@
 import { api } from "./api";
 
+export type ClassAddress = {
+  id?: number;
+  cep: string;
+  rua: string;
+  numero: string;
+  bairro: string;
+  cidade: string;
+  estado: string;
+  pais: string;
+  complemento: string;
+};
+
 export type Class = {
   id: number;
   teacher_id?: number | null;
+  id_endereco?: number | null;
   name: string;
+  address?: string;
+  endereco?: ClassAddress;
   recurrence_desc: string;
   recurrence_json: string;
   student_count?: number;
@@ -20,6 +35,7 @@ export type ClassPayload = {
   name: string;
   recurrence_desc: string;
   recurrence_json: string;
+  endereco?: ClassAddress;
 };
 
 export type PrivateClassPayload = ClassPayload & {
@@ -63,14 +79,60 @@ function asBoolean(value: unknown) {
   return value === true || value === 1 || value === "1";
 }
 
-function normalizeClass(item: RawClass): Class {
+function asRecord(value: unknown): Record<string, unknown> | null {
+  if (value && typeof value === "object" && !Array.isArray(value)) {
+    return value as Record<string, unknown>;
+  }
+  return null;
+}
+
+function normalizeAddress(item: Record<string, unknown>): ClassAddress {
+  return {
+    id: asNumber(item.id) || undefined,
+    cep: asString(item.cep),
+    rua: asString(item.rua),
+    numero: asString(item.numero),
+    bairro: asString(item.bairro),
+    cidade: asString(item.cidade),
+    estado: asString(item.estado),
+    pais: asString(item.pais) || "Brasil",
+    complemento: asString(item.complemento),
+  };
+}
+
+function formatAddress(address?: ClassAddress) {
+  if (!address) return undefined;
+
+  const main = [address.rua, address.numero].filter(Boolean).join(", ");
+  const region = [address.bairro, address.cidade, address.estado].filter(Boolean).join(" - ");
+  const suffix = [address.cep, address.pais].filter(Boolean).join(" • ");
+
+  return [main, region, suffix].filter(Boolean).join(" | ") || undefined;
+}
+
+export function normalizeClass(item: RawClass): Class {
+  const normalizedAddress = asRecord(item.endereco)
+    ? normalizeAddress(asRecord(item.endereco) as Record<string, unknown>)
+    : undefined;
+
   return {
     id: asNumber(item.id),
     teacher_id: (() => {
       const value = asNumber(item.teacher_id);
       return value > 0 ? value : null;
     })(),
+    id_endereco: (() => {
+      const value = asNumber(item.id_endereco);
+      return value > 0 ? value : null;
+    })(),
     name: asString(item.name),
+    address:
+      asString(item.address) ||
+      formatAddress(normalizedAddress) ||
+      asString(item.endereco) ||
+      asString(item.location) ||
+      undefined,
+    endereco: normalizedAddress,
     recurrence_desc: asString(item.recurrence_desc),
     recurrence_json: asString(item.recurrence_json),
     student_count: asNumber(item.student_count),

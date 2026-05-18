@@ -222,6 +222,38 @@ function buildClassInitialValues(contract: ContractRow): ClassFormValues {
         ? buildRecurrenceDescription(recurrence)
         : "",
     recurrence_json: JSON.stringify(recurrence),
+    cep: "",
+    rua: "",
+    numero: "",
+    bairro: "",
+    cidade: "",
+    estado: "",
+    pais: "Brasil",
+    complemento: "",
+  };
+}
+
+function buildClassAddress(values: ClassFormValues) {
+  const hasAddress =
+    values.cep.trim() ||
+    values.rua.trim() ||
+    values.numero.trim() ||
+    values.bairro.trim() ||
+    values.cidade.trim() ||
+    values.estado.trim() ||
+    values.complemento.trim();
+
+  if (!hasAddress) return undefined;
+
+  return {
+    cep: values.cep.trim(),
+    rua: values.rua.trim(),
+    numero: values.numero.trim(),
+    bairro: values.bairro.trim(),
+    cidade: values.cidade.trim(),
+    estado: values.estado.trim(),
+    pais: values.pais.trim() || "Brasil",
+    complemento: values.complemento.trim(),
   };
 }
 
@@ -337,6 +369,7 @@ export default function GestaoContratosPage() {
       teacher_id: values.teacher_id ? Number(values.teacher_id) : null,
       recurrence_desc: values.recurrence_desc,
       recurrence_json: values.recurrence_json,
+      endereco: buildClassAddress(values),
     });
 
     await Promise.all([loadContractData(), loadClasses({ force: true })]);

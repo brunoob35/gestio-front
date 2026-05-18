@@ -1,3 +1,4 @@
+import axios from "axios";
 import { useEffect, useState } from "react";
 import { formatPhoneNumber } from "../../utils/phone";
 import "./ProfessorModal.css";
@@ -42,6 +43,7 @@ export default function ProfessorModal({
   const [form, setForm] = useState<ProfessorFormValues>(initialForm);
   const [loading, setLoading] = useState(false);
   const [submitAttempted, setSubmitAttempted] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
   useEffect(() => {
     if (!open) return;
@@ -56,6 +58,7 @@ export default function ProfessorModal({
       nascimento: initialValues?.nascimento ?? "",
     });
     setSubmitAttempted(false);
+    setSubmitError("");
   }, [open, initialValues]);
 
   if (!open) return null;
@@ -66,6 +69,7 @@ export default function ProfessorModal({
       ...prev,
       [name]: name === "telefone" ? formatPhoneNumber(value) : value,
     }));
+    setSubmitError("");
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -76,21 +80,36 @@ export default function ProfessorModal({
       !form.nome.trim() ||
       !form.email.trim() ||
       !form.telefone.trim() ||
-      (mode === "create" &&
-        (!form.cpf.trim() ||
-          !form.rg.trim() ||
-          !form.nascimento.trim() ||
-          !form.senha.trim()));
+      (mode === "create" && (!form.cpf.trim() || !form.nascimento.trim()));
 
     if (missingRequiredField) {
+      setSubmitError("Preencha os campos obrigatórios antes de salvar.");
       return;
     }
 
     setLoading(true);
+    setSubmitError("");
 
     try {
       await onSubmit(form);
       onClose();
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const apiMessage =
+          typeof error.response?.data === "string"
+            ? error.response.data
+            : typeof error.response?.data?.erro === "string"
+            ? error.response.data.erro
+            : typeof error.response?.data?.error === "string"
+            ? error.response.data.error
+            : typeof error.response?.data?.message === "string"
+            ? error.response.data.message
+            : "";
+
+        setSubmitError(apiMessage || "Não foi possível salvar o usuário.");
+      } else {
+        setSubmitError("Não foi possível salvar o usuário.");
+      }
     } finally {
       setLoading(false);
     }
@@ -153,13 +172,12 @@ export default function ProfessorModal({
               />
             </label>
 
-            <label className={submitAttempted && mode === "create" && !form.rg.trim() ? "is-invalid" : ""}>
-              <span>RG {mode === "create" ? "*" : ""}</span>
+            <label>
+              <span>RG</span>
               <input
                 name="rg"
                 value={form.rg}
                 onChange={handleChange}
-                required={mode === "create"}
               />
             </label>
 
@@ -174,21 +192,26 @@ export default function ProfessorModal({
               />
             </label>
 
-            <label className={`professor-modal__full ${submitAttempted && mode === "create" && !form.senha.trim() ? "is-invalid" : ""}`}>
+            <label className="professor-modal__full">
               <span>
-                {mode === "create" ? "Senha *" : "Nova senha (opcional)"}
+                {mode === "create" ? "Senha (opcional)" : "Nova senha (opcional)"}
               </span>
               <input
                 name="senha"
                 type="password"
                 value={form.senha}
                 onChange={handleChange}
-                required={mode === "create"}
               />
             </label>
           </div>
 
           <div className="professor-modal__actions">
+            {submitError ? (
+              <p className="professor-modal__feedback professor-modal__feedback--error">
+                {submitError}
+              </p>
+            ) : null}
+
             <button
               type="button"
               className="professor-modal__button professor-modal__button--secondary"

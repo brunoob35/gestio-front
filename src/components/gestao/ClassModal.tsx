@@ -24,6 +24,14 @@ export type ClassFormValues = {
   teacher_id: string;
   recurrence_desc: string;
   recurrence_json: string;
+  cep: string;
+  rua: string;
+  numero: string;
+  bairro: string;
+  cidade: string;
+  estado: string;
+  pais: string;
+  complemento: string;
 };
 
 type ClassModalProps = {
@@ -65,6 +73,14 @@ const initialForm: ClassFormValues = {
   teacher_id: "",
   recurrence_desc: "",
   recurrence_json: "",
+  cep: "",
+  rua: "",
+  numero: "",
+  bairro: "",
+  cidade: "",
+  estado: "",
+  pais: "Brasil",
+  complemento: "",
 };
 
 const initialLessonEditor: LessonEditorValues = {
@@ -231,6 +247,14 @@ export default function ClassModal({
       teacher_id: initialValues?.teacher_id ?? "",
       recurrence_desc: initialValues?.recurrence_desc ?? "",
       recurrence_json: initialValues?.recurrence_json ?? "",
+      cep: initialValues?.cep ?? "",
+      rua: initialValues?.rua ?? "",
+      numero: initialValues?.numero ?? "",
+      bairro: initialValues?.bairro ?? "",
+      cidade: initialValues?.cidade ?? "",
+      estado: initialValues?.estado ?? "",
+      pais: initialValues?.pais ?? "Brasil",
+      complemento: initialValues?.complemento ?? "",
     });
     setSubmitError("");
     setSingleLessonDate("");
@@ -557,6 +581,95 @@ export default function ClassModal({
                 ))}
               </select>
             </label>
+
+            <div className="class-modal__full class-modal__address-card">
+              <div className="class-modal__section-header">
+                <span>Endereço da turma</span>
+                <p>Opcional. Esse endereço será exibido na área do professor.</p>
+              </div>
+
+              <div className="class-modal__grid">
+                <label>
+                  <span>CEP</span>
+                  <input
+                    name="cep"
+                    value={form.cep}
+                    onChange={handleInputChange}
+                    placeholder="Ex.: 89000-000"
+                  />
+                </label>
+
+                <label>
+                  <span>País</span>
+                  <input
+                    name="pais"
+                    value={form.pais}
+                    onChange={handleInputChange}
+                    placeholder="Brasil"
+                  />
+                </label>
+
+                <label className="class-modal__full">
+                  <span>Rua</span>
+                  <input
+                    name="rua"
+                    value={form.rua}
+                    onChange={handleInputChange}
+                    placeholder="Ex.: Rua das Palmeiras"
+                  />
+                </label>
+
+                <label>
+                  <span>Número</span>
+                  <input
+                    name="numero"
+                    value={form.numero}
+                    onChange={handleInputChange}
+                    placeholder="Ex.: 120"
+                  />
+                </label>
+
+                <label>
+                  <span>Bairro</span>
+                  <input
+                    name="bairro"
+                    value={form.bairro}
+                    onChange={handleInputChange}
+                    placeholder="Ex.: Centro"
+                  />
+                </label>
+
+                <label>
+                  <span>Cidade</span>
+                  <input
+                    name="cidade"
+                    value={form.cidade}
+                    onChange={handleInputChange}
+                    placeholder="Ex.: Blumenau"
+                  />
+                </label>
+
+                <label>
+                  <span>Estado</span>
+                  <input
+                    name="estado"
+                    value={form.estado}
+                    onChange={handleInputChange}
+                    placeholder="Ex.: SC"
+                  />
+                </label>
+
+                <label className="class-modal__full">
+                  <span>Complemento</span>
+                  <input
+                    name="complemento"
+                    value={form.complemento}
+                    onChange={handleInputChange}
+                    placeholder="Ex.: Sala 101, bloco B"
+                  />
+                </label>
+              </div>
+            </div>
 
             <div className={`class-modal__full class-modal__recurrence-card ${submitAttempted && (!form.recurrence_json.trim() || !recurrence || !recurrence.weekdays.length || !recurrence.start_date || !recurrence.start_time || recurrence.lesson_count <= 0) ? "is-invalid" : ""}`}>
               <div className="class-modal__recurrence-header">

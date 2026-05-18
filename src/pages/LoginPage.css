@@ -151,6 +151,13 @@
   margin-top: 18px;
 }
 
+.login-helper-note {
+  margin: 0 0 10px;
+  color: #6b7280;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
 .login-helper-text {
   border: none;
   background: transparent;

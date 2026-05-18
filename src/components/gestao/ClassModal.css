@@ -117,6 +117,27 @@
   background: #f8fafc;
 }
 
+.class-modal__address-card {
+  display: grid;
+  gap: 16px;
+  border: 1px solid #dbe3f1;
+  border-radius: 18px;
+  padding: 18px;
+  background: #f8fafc;
+}
+
+.class-modal__section-header {
+  display: grid;
+  gap: 4px;
+}
+
+.class-modal__section-header p {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
 .class-modal__recurrence-card.is-invalid {
   border-color: #fca5a5;
   background: #fff7f7;

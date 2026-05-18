@@ -31,6 +31,16 @@ export function getUserPermissions(): number | null {
   return decoded.permissions;
 }
 
+export function getCurrentUserId(): number | null {
+  const token = getToken();
+  if (!token) return null;
+
+  const decoded = decodeToken(token);
+  if (!decoded?.userId) return null;
+
+  return decoded.userId;
+}
+
 export function isTokenExpired(token: string): boolean {
   const decoded = decodeToken(token);
   if (!decoded?.exp) return true;

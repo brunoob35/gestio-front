@@ -1,3 +1,4 @@
+import axios from "axios";
 import { useState } from "react";
 import type { FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
@@ -7,6 +8,12 @@ import { decodeToken, saveToken } from "../services/auth";
 import dashboardIcon from "../assets/icons/dashboard-svgrepo-com.svg";
 
 import "./LoginPage.css";
+
+type LoginResponse = {
+  token?: string;
+  first_access?: boolean;
+  email?: string;
+};
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -24,12 +31,22 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const response = await api.post<string>("/login", {
+      const response = await api.post<LoginResponse>("/login", {
         email,
         senha,
       });
 
-      const token = response.data;
+      const token = response.data?.token;
+
+      if (response.data?.first_access && token) {
+        navigate(
+          `/first-access?token=${encodeURIComponent(token)}&email=${encodeURIComponent(
+            response.data.email || email
+          )}`,
+          { replace: true }
+        );
+        return;
+      }
 
       if (!token || typeof token !== "string") {
         setErro("Token inválido recebido do servidor.");
@@ -56,8 +73,16 @@ export default function LoginPage() {
       }
 
       setErro("Permissão de usuário não reconhecida.");
-    } catch {
-      setErro("Email ou senha inválidos.");
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const apiMessage =
+          typeof error.response?.data?.error === "string"
+            ? error.response.data.error
+            : "";
+        setErro(apiMessage || "Email ou senha inválidos.");
+      } else {
+        setErro("Email ou senha inválidos.");
+      }
     } finally {
       setLoading(false);
     }
@@ -105,7 +130,6 @@ export default function LoginPage() {
               value={senha}
               onChange={(e) => setSenha(e.target.value)}
               autoComplete="current-password"
-              required
             />
           </div>
 
@@ -121,6 +145,9 @@ export default function LoginPage() {
         </form>
 
         <div className="login-helper">
+          <p className="login-helper-note">
+            No primeiro acesso, informe seu e-mail para cadastrar a senha inicial.
+          </p>
           <button
             type="button"
             className="login-helper-text"

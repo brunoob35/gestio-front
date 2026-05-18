@@ -3,6 +3,7 @@ import type { JSX } from "react";
 
 import LoginPage from "../pages/LoginPage";
 import ForgotPasswordPage from "../pages/ForgotPasswordPage";
+import FirstAccessPage from "../pages/FirstAccessPage";
 import ResetPasswordPage from "../pages/ResetPasswordPage";
 import GestaoHomePage from "../pages/GestaoHomePage";
 import GestaoProfessoresPage from "../pages/GestaoProfessoresPage";
@@ -12,12 +13,14 @@ import GestaoAlunosPage from "../pages/GestaoAlunosPage";
 import GestaoClientesPage from "../pages/GestaoClientesPage";
 import GestaoContratosPage from "../pages/GestaoContratosPage";
 import GestaoPresencasPage from "../pages/GestaoPresencasPage";
+import GestaoSettingsPage from "../pages/GestaoSettingsPage";
+import ProfessorHomePage from "../pages/ProfessorHomePage";
+import ProfessorClassesPage from "../pages/ProfessorClassesPage";
+import ProfessorLessonsPage from "../pages/ProfessorLessonsPage";
+import ProfessorSettingsPage from "../pages/ProfessorSettingsPage";
+import ProfessorStudentsPage from "../pages/ProfessorStudentsPage";
 
 import { getUserPermissions, isAuthenticated } from "../services/auth";
-
-function ProfessorHomePage() {
-  return <h1>Home do professor</h1>;
-}
 
 function PrivateRoute({
   children,
@@ -67,6 +70,7 @@ export function AppRoutes() {
     <Routes>
       <Route path="/" element={getInitialRedirect()} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/first-access" element={<FirstAccessPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
 
       <Route
@@ -101,6 +105,42 @@ export function AppRoutes() {
         element={
           <PrivateRoute allowedPermissions={[2]}>
             <ProfessorHomePage />
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/professor/turmas"
+        element={
+          <PrivateRoute allowedPermissions={[2]}>
+            <ProfessorClassesPage />
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/professor/aulas"
+        element={
+          <PrivateRoute allowedPermissions={[2]}>
+            <ProfessorLessonsPage />
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/professor/alunos"
+        element={
+          <PrivateRoute allowedPermissions={[2]}>
+            <ProfessorStudentsPage />
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/professor/configuracoes"
+        element={
+          <PrivateRoute allowedPermissions={[2]}>
+            <ProfessorSettingsPage />
           </PrivateRoute>
         }
       />
@@ -146,6 +186,15 @@ export function AppRoutes() {
         element={
           <PrivateRoute allowedPermissions={[1, 4]}>
             <GestaoPresencasPage />
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/gestao/configuracoes"
+        element={
+          <PrivateRoute allowedPermissions={[1, 4]}>
+            <GestaoSettingsPage />
           </PrivateRoute>
         }
       />

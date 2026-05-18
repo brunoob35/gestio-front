@@ -50,6 +50,30 @@ import "./GestaoAlunosPage.css";
 type StudentClassesState = Record<number, Class[]>;
 type LessonState = Record<number, Lesson[]>;
 
+function buildClassAddress(values: ClassFormValues) {
+  const hasAddress =
+    values.cep.trim() ||
+    values.rua.trim() ||
+    values.numero.trim() ||
+    values.bairro.trim() ||
+    values.cidade.trim() ||
+    values.estado.trim() ||
+    values.complemento.trim();
+
+  if (!hasAddress) return undefined;
+
+  return {
+    cep: values.cep.trim(),
+    rua: values.rua.trim(),
+    numero: values.numero.trim(),
+    bairro: values.bairro.trim(),
+    cidade: values.cidade.trim(),
+    estado: values.estado.trim(),
+    pais: values.pais.trim() || "Brasil",
+    complemento: values.complemento.trim(),
+  };
+}
+
 export default function GestaoAlunosPage() {
   const {
     students,
@@ -72,6 +96,16 @@ export default function GestaoAlunosPage() {
   const [createOpen, setCreateOpen] = useState(false);
   const [editingStudent, setEditingStudent] = useState<StudentRow | null>(null);
   const [classSourceStudent, setClassSourceStudent] = useState<StudentRow | null>(null);
+  const [classSourceAddress, setClassSourceAddress] = useState<{
+    cep: string;
+    rua: string;
+    numero: string;
+    bairro: string;
+    cidade: string;
+    estado: string;
+    pais: string;
+    complemento: string;
+  } | null>(null);
   const [selectedStudentId, setSelectedStudentId] = useState<number | null>(null);
   const [timelineCollapsed, setTimelineCollapsed] = useState(false);
   const [classesCollapsed, setClassesCollapsed] = useState(false);
@@ -176,6 +210,33 @@ export default function GestaoAlunosPage() {
 
     const uniqueByName = customers.filter((customer) => customer.nome === student.responsavel);
     return uniqueByName.length === 1 ? String(uniqueByName[0].id) : "";
+  }
+
+  async function handleOpenClassModalFromStudent(student: StudentRow) {
+    setClassSourceStudent(student);
+    setClassSourceAddress(null);
+
+    const customerId = inferResponsibleCustomerId(student);
+    if (!customerId) return;
+
+    try {
+      const addresses = await fetchCustomerAddresses(Number(customerId));
+      const primaryAddress = addresses[0];
+      if (!primaryAddress) return;
+
+      setClassSourceAddress({
+        cep: primaryAddress.cep ?? "",
+        rua: primaryAddress.rua ?? "",
+        numero: primaryAddress.numero ?? "",
+        bairro: primaryAddress.bairro ?? "",
+        cidade: primaryAddress.cidade ?? "",
+        estado: primaryAddress.estado ?? "",
+        pais: primaryAddress.pais || "Brasil",
+        complemento: primaryAddress.complemento ?? "",
+      });
+    } catch (error) {
+      console.error("Não foi possível carregar o endereço do responsável para a turma.", error);
+    }
   }
 
   async function syncStudentResponsible(
@@ -436,6 +497,7 @@ export default function GestaoAlunosPage() {
       teacher_id: values.teacher_id ? Number(values.teacher_id) : null,
       recurrence_desc: values.recurrence_desc,
       recurrence_json: values.recurrence_json,
+      endereco: buildClassAddress(values),
     });
 
     invalidateStudentClassLinks();
@@ -668,7 +730,7 @@ export default function GestaoAlunosPage() {
                           className="gestao-alunos__icon-button"
                           onClick={(event) => {
                             event.stopPropagation();
-                            setClassSourceStudent(student);
+                            void handleOpenClassModalFromStudent(student);
                           }}
                           title="Criar turma a partir deste aluno"
                           aria-label="Criar turma a partir deste aluno"
@@ -937,10 +999,21 @@ export default function GestaoAlunosPage() {
                   teacher_id: "",
                   recurrence_desc: "",
                   recurrence_json: "",
+                  cep: classSourceAddress?.cep ?? "",
+                  rua: classSourceAddress?.rua ?? "",
+                  numero: classSourceAddress?.numero ?? "",
+                  bairro: classSourceAddress?.bairro ?? "",
+                  cidade: classSourceAddress?.cidade ?? "",
+                  estado: classSourceAddress?.estado ?? "",
+                  pais: classSourceAddress?.pais ?? "Brasil",
+                  complemento: classSourceAddress?.complemento ?? "",
                 }
               : undefined
           }
-          onClose={() => setClassSourceStudent(null)}
+          onClose={() => {
+            setClassSourceStudent(null);
+            setClassSourceAddress(null);
+          }}
           onSubmit={handleCreateClassFromStudent}
         />
 

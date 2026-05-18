@@ -1,0 +1,158 @@
+.professor-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.professor-settings__hero,
+.professor-settings__panel {
+  background: #ffffff;
+  border: 1px solid #e8edf6;
+  border-radius: 24px;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.04);
+}
+
+.professor-settings__hero,
+.professor-settings__panel {
+  padding: 26px 30px;
+}
+
+.professor-settings__hero h2,
+.professor-settings__panel-header h3 {
+  margin: 0;
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.professor-settings__hero p,
+.professor-settings__panel-header p {
+  margin: 8px 0 0;
+  color: #60708f;
+  line-height: 1.6;
+}
+
+.professor-settings__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.professor-settings__feedback {
+  margin-top: 18px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  font-weight: 600;
+}
+
+.professor-settings__feedback--error {
+  border: 1px solid #fecaca;
+  background: #fff1f2;
+  color: #b91c1c;
+}
+
+.professor-settings__feedback--success {
+  border: 1px solid #bbf7d0;
+  background: #f0fdf4;
+  color: #166534;
+}
+
+.professor-settings__form {
+  margin-top: 22px;
+}
+
+.professor-settings__form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.professor-settings__form-grid--single {
+  grid-template-columns: 1fr;
+}
+
+.professor-settings__form label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.professor-settings__form span {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.professor-settings__form input {
+  width: 100%;
+  min-height: 48px;
+  border: 1px solid #d7dce5;
+  border-radius: 12px;
+  padding: 0 15px;
+  font-size: 0.95rem;
+  color: #111827;
+  background: #f9fafb;
+  outline: none;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.professor-settings__form input:focus {
+  background: #ffffff;
+  border-color: #22c55e;
+  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.12);
+}
+
+.professor-settings__actions {
+  margin-top: 22px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.professor-settings__actions button {
+  min-width: 180px;
+  min-height: 46px;
+  border: none;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #16a34a 0%, #15803d 100%);
+  color: #ffffff;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s ease, opacity 0.2s ease;
+}
+
+.professor-settings__actions button:hover {
+  transform: translateY(-1px);
+  opacity: 0.98;
+}
+
+.professor-settings__actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+  transform: none;
+}
+
+@media (max-width: 960px) {
+  .professor-settings__grid,
+  .professor-settings__form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .professor-settings__hero,
+  .professor-settings__panel {
+    padding: 22px 20px;
+  }
+
+  .professor-settings__actions {
+    justify-content: stretch;
+  }
+
+  .professor-settings__actions button {
+    width: 100%;
+  }
+}

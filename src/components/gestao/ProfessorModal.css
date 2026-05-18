@@ -92,8 +92,20 @@
 
 .professor-modal__actions {
   display: flex;
+  align-items: center;
   justify-content: flex-end;
   gap: 12px;
+  flex-wrap: wrap;
+}
+
+.professor-modal__feedback {
+  margin: 0 auto 0 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.professor-modal__feedback--error {
+  color: #b91c1c;
 }
 
 .professor-modal__button {

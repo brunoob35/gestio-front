@@ -1,3 +1,4 @@
+import axios from "axios";
 import { Fragment, useEffect, useMemo, useState } from "react";
 import GestaoShell from "../components/gestao/GestaoShell";
 import ClassModal, {
@@ -51,6 +52,53 @@ type ClassDetails = {
   lessonsLoaded: boolean;
 };
 
+function getErrorMessage(error: unknown, fallback: string) {
+  if (axios.isAxiosError(error)) {
+    const apiMessage =
+      typeof error.response?.data === "string"
+        ? error.response.data
+        : typeof error.response?.data?.error === "string"
+        ? error.response.data.error
+        : typeof error.response?.data?.erro === "string"
+        ? error.response.data.erro
+        : typeof error.message === "string"
+        ? error.message
+        : "";
+
+    return apiMessage || fallback;
+  }
+
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  return fallback;
+}
+
+function buildClassAddress(values: ClassFormValues) {
+  const hasAddress =
+    values.cep.trim() ||
+    values.rua.trim() ||
+    values.numero.trim() ||
+    values.bairro.trim() ||
+    values.cidade.trim() ||
+    values.estado.trim() ||
+    values.complemento.trim();
+
+  if (!hasAddress) return undefined;
+
+  return {
+    cep: values.cep.trim(),
+    rua: values.rua.trim(),
+    numero: values.numero.trim(),
+    bairro: values.bairro.trim(),
+    cidade: values.cidade.trim(),
+    estado: values.estado.trim(),
+    pais: values.pais.trim() || "Brasil",
+    complemento: values.complemento.trim(),
+  };
+}
+
 export default function GestaoTurmasPage() {
   const [search, setSearch] = useState("");
   const [lessonOrder, setLessonOrder] = useState<"name" | "closest" | "farthest">("name");
@@ -87,20 +135,54 @@ export default function GestaoTurmasPage() {
 
     async function load() {
       setLoading(true);
-      try {
-        await Promise.all([
+      setFeedback("");
+
+      const [classesResult, professorsResult, allProfessorsResult, statusesResult] =
+        await Promise.allSettled([
           loadClasses(),
           loadProfessors(),
           loadAllProfessors(),
+          fetchLessonStatuses(),
         ]);
-        const statuses = await fetchLessonStatuses();
-        if (!cancelled) {
-          setLessonStatuses(statuses);
+
+      if (cancelled) return;
+
+      if (statusesResult.status === "fulfilled") {
+        setLessonStatuses(statusesResult.value);
+      }
+
+      const classesFailed = classesResult.status === "rejected";
+      const supportDataFailed =
+        professorsResult.status === "rejected" ||
+        allProfessorsResult.status === "rejected" ||
+        statusesResult.status === "rejected";
+
+      if (classesFailed) {
+        console.error("Erro ao carregar turmas:", classesResult.reason);
+        setFeedback(
+          getErrorMessage(
+            classesResult.reason,
+            "Nao foi possível carregar as turmas cadastradas."
+          )
+        );
+      } else if (supportDataFailed) {
+        if (professorsResult.status === "rejected") {
+          console.error("Erro ao carregar professores ativos:", professorsResult.reason);
         }
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
+        if (allProfessorsResult.status === "rejected") {
+          console.error("Erro ao carregar todos os professores:", allProfessorsResult.reason);
         }
+        if (statusesResult.status === "rejected") {
+          console.error("Erro ao carregar status de aulas:", statusesResult.reason);
+        }
+
+        setFeedback(
+          "Alguns dados auxiliares nao puderam ser carregados. Exibindo as turmas disponíveis."
+        );
+      }
+
+      if (!cancelled) {
+        setLoading(false);
       }
     }
 
@@ -158,6 +240,7 @@ export default function GestaoTurmasPage() {
       teacher_id: values.teacher_id ? Number(values.teacher_id) : null,
       recurrence_desc: values.recurrence_desc,
       recurrence_json: values.recurrence_json,
+      endereco: buildClassAddress(values),
     });
 
     upsertClass(createdClass);
@@ -178,6 +261,7 @@ export default function GestaoTurmasPage() {
       teacher_id: values.teacher_id ? Number(values.teacher_id) : null,
       recurrence_desc: values.recurrence_desc,
       recurrence_json: values.recurrence_json,
+      endereco: buildClassAddress(values),
     });
 
     const classId = editingClass.id;
@@ -198,6 +282,7 @@ export default function GestaoTurmasPage() {
       teacher_id: teacherId,
       recurrence_desc: teacherClass.recurrence_desc,
       recurrence_json: teacherClass.recurrence_json,
+      endereco: teacherClass.endereco,
     });
 
     const classId = teacherClass.id;
@@ -740,6 +825,14 @@ export default function GestaoTurmasPage() {
                   teacher_id: editingClass.teacher_id ? String(editingClass.teacher_id) : "",
                   recurrence_desc: editingClass.recurrence_desc,
                   recurrence_json: editingClass.recurrence_json,
+                  cep: editingClass.endereco?.cep ?? "",
+                  rua: editingClass.endereco?.rua ?? "",
+                  numero: editingClass.endereco?.numero ?? "",
+                  bairro: editingClass.endereco?.bairro ?? "",
+                  cidade: editingClass.endereco?.cidade ?? "",
+                  estado: editingClass.endereco?.estado ?? "",
+                  pais: editingClass.endereco?.pais ?? "Brasil",
+                  complemento: editingClass.endereco?.complemento ?? "",
                 }
               : undefined
           }

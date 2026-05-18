@@ -76,6 +76,12 @@
   margin-bottom: 16px;
 }
 
+.gestao-presencas__calendar-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .gestao-presencas__calendar-toolbar strong {
   font-size: 0.98rem;
   font-weight: 700;
@@ -91,6 +97,14 @@
   background: #ffffff;
   color: #475569;
   cursor: pointer;
+}
+
+.gestao-presencas__calendar-today {
+  width: auto;
+  min-width: 58px;
+  padding: 0 12px;
+  font-size: 0.88rem;
+  font-weight: 700;
 }
 
 .gestao-presencas__weekday-row {

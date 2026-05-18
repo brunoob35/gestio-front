@@ -391,12 +391,25 @@ export default function GestaoPresencasPage() {
 
             <div className="gestao-presencas__calendar-shell">
               <div className="gestao-presencas__calendar-toolbar">
-                <button
-                  type="button"
-                  onClick={() => setVisibleMonth((current) => addMonths(current, -1))}
-                >
-                  ←
-                </button>
+                <div className="gestao-presencas__calendar-toolbar-actions">
+                  <button
+                    type="button"
+                    onClick={() => setVisibleMonth((current) => addMonths(current, -1))}
+                  >
+                    ←
+                  </button>
+                  <button
+                    type="button"
+                    className="gestao-presencas__calendar-today"
+                    onClick={() => {
+                      const today = new Date();
+                      setSelectedDate(todayIso);
+                      setVisibleMonth(new Date(today.getFullYear(), today.getMonth(), 1));
+                    }}
+                  >
+                    Hoje
+                  </button>
+                </div>
                 <strong>{formatMonthLabel(visibleMonth)}</strong>
                 <button
                   type="button"

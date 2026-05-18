@@ -13,6 +13,11 @@ export type UserRow = {
   status: string;
 };
 
+export type UpdateOwnPasswordPayload = {
+  senha_atual: string;
+  nova_senha: string;
+};
+
 export type UserPayload = {
   nome: string;
   email: string;
@@ -80,5 +85,20 @@ export async function updateUser(userID: number, payload: UserPayload) {
 
 export async function deleteUser(userID: number) {
   const response = await api.delete(`/users/${userID}`);
+  return response.data;
+}
+
+export async function fetchCurrentUser() {
+  const response = await api.get("/users/me");
+  return normalizeUser((response.data ?? {}) as RawUser);
+}
+
+export async function updateCurrentUser(payload: UserPayload) {
+  const response = await api.put("/users/me", payload);
+  return response.data;
+}
+
+export async function updateCurrentUserPassword(payload: UpdateOwnPasswordPayload) {
+  const response = await api.patch("/users/me/password", payload);
   return response.data;
 }

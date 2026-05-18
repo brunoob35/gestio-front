@@ -1,0 +1,401 @@
+.professor-home {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.professor-home__hero,
+.professor-home__panel {
+  background: #ffffff;
+  border: 1px solid #e8edf6;
+  border-radius: 24px;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.04);
+}
+
+.professor-home__hero {
+  padding: 26px 30px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.professor-home__hero h2,
+.professor-home__panel-header h3 {
+  margin: 0;
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.professor-home__hero p,
+.professor-home__panel-header p {
+  margin: 8px 0 0;
+  max-width: 760px;
+  color: #60708f;
+  line-height: 1.6;
+}
+
+.professor-home__teacher-card {
+  min-width: 260px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 18px 20px;
+  border-radius: 18px;
+  background: #f3fcf6;
+  border: 1px solid #d7f3de;
+}
+
+.professor-home__teacher-card strong {
+  font-size: 1rem;
+  color: #111827;
+}
+
+.professor-home__teacher-card span {
+  color: #5f6f89;
+  font-size: 0.95rem;
+}
+
+.professor-home__error {
+  padding: 14px 16px;
+  border-radius: 18px;
+  border: 1px solid #fecaca;
+  background: #fff1f2;
+  color: #b91c1c;
+  font-weight: 600;
+}
+
+.professor-home__stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 22px;
+}
+
+.professor-home__top-grid {
+  display: grid;
+  grid-template-columns: minmax(300px, 0.78fr) minmax(0, 1.52fr);
+  gap: 22px;
+}
+
+.professor-home__panel {
+  padding: 24px;
+}
+
+.professor-home__panel-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.professor-home__calendar-shell {
+  border: 1px solid #edf2fa;
+  border-radius: 22px;
+  padding: 14px;
+  background: #ffffff;
+  max-width: 470px;
+}
+
+.professor-home__calendar-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.professor-home__calendar-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.professor-home__calendar-toolbar strong {
+  font-size: 0.98rem;
+  font-weight: 700;
+  text-transform: capitalize;
+  color: #111827;
+}
+
+.professor-home__calendar-toolbar button {
+  width: 34px;
+  height: 34px;
+  border: 1px solid #dbe4f1;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #475569;
+  cursor: pointer;
+}
+
+.professor-home__calendar-today {
+  width: auto;
+  min-width: 58px;
+  padding: 0 12px;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.professor-home__weekday-row {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.professor-home__weekday-row span {
+  text-align: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #60708f;
+}
+
+.professor-home__calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.professor-home__calendar-day {
+  min-height: 50px;
+  border: 1px solid #e6ebf5;
+  border-radius: 12px;
+  background: #ffffff;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.professor-home__calendar-day:hover {
+  transform: translateY(-1px);
+  border-color: #c6dfce;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+}
+
+.professor-home__calendar-day.is-outside {
+  opacity: 0.55;
+}
+
+.professor-home__calendar-day.is-selected {
+  border-color: #16a34a;
+  background: #16a34a;
+  box-shadow: none;
+}
+
+.professor-home__calendar-day-number {
+  font-size: 0.94rem;
+  font-weight: 800;
+  color: #111827;
+}
+
+.professor-home__calendar-day.is-selected .professor-home__calendar-day-number {
+  color: #ffffff;
+}
+
+.professor-home__calendar-dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 3px;
+}
+
+.professor-home__calendar-dots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+}
+
+.professor-home__calendar-dots .is-green {
+  background: #16a34a;
+}
+
+.professor-home__calendar-dots .is-yellow {
+  background: #f59e0b;
+}
+
+.professor-home__calendar-dots .is-blue {
+  background: #2563eb;
+}
+
+.professor-home__lesson-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.professor-home__lesson-card {
+  border: 1px solid #e9eef7;
+  border-radius: 16px;
+  background: #ffffff;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.professor-home__lesson-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.professor-home__lesson-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.professor-home__lesson-copy strong {
+  font-size: 1.14rem;
+  color: #111827;
+}
+
+.professor-home__lesson-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  color: #60708f;
+  font-size: 0.96rem;
+}
+
+.professor-home__lesson-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.professor-home__lesson-meta img {
+  width: 16px;
+  height: 16px;
+}
+
+.professor-home__lesson-recurrence {
+  margin: 0;
+  color: #64748b;
+  line-height: 1.5;
+}
+
+.professor-home__status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 110px;
+  min-height: 36px;
+  padding: 0 14px;
+  border-radius: 999px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.professor-home__status--pending,
+.professor-home__status--rescheduled {
+  color: #1d4ed8;
+  background: #e8f0ff;
+}
+
+.professor-home__status--completed {
+  color: #15803d;
+  background: #eaf9ef;
+}
+
+.professor-home__status--overdue,
+.professor-home__status--reschedule-pending {
+  color: #b45309;
+  background: #fff5db;
+}
+
+.professor-home__status--cancelled,
+.professor-home__status--compensated {
+  color: #b91c1c;
+  background: #fff1f2;
+}
+
+.professor-home__lesson-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.professor-home__action {
+  min-height: 44px;
+  border-radius: 14px;
+  border: 1px solid transparent;
+  padding: 0 18px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
+}
+
+.professor-home__action:hover {
+  transform: translateY(-1px);
+}
+
+.professor-home__action:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.professor-home__action--success {
+  color: #166534;
+  background: #ecfdf3;
+  border-color: #b7ebc7;
+}
+
+.professor-home__action--warning {
+  color: #b45309;
+  background: #fff7e6;
+  border-color: #fde3a7;
+}
+
+.professor-home__empty-state {
+  padding: 22px 18px;
+  border-radius: 18px;
+  border: 1px dashed #dbe4f1;
+  background: #fafcff;
+  color: #60708f;
+  text-align: center;
+}
+
+@media (max-width: 1200px) {
+  .professor-home__top-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .professor-home__calendar-shell {
+    max-width: none;
+  }
+}
+
+@media (max-width: 900px) {
+  .professor-home__stats {
+    grid-template-columns: 1fr;
+  }
+
+  .professor-home__hero {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 768px) {
+  .professor-home__hero,
+  .professor-home__panel {
+    padding: 22px;
+  }
+
+  .professor-home__lesson-top {
+    flex-direction: column;
+  }
+
+  .professor-home__lesson-actions {
+    flex-direction: column;
+  }
+}

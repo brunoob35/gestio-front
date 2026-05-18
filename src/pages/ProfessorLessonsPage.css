@@ -1,0 +1,314 @@
+.professor-lessons {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.professor-lessons__hero,
+.professor-lessons__panel,
+.professor-lessons__modal {
+  background: #ffffff;
+  border: 1px solid #e8edf6;
+  border-radius: 24px;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.04);
+}
+
+.professor-lessons__hero,
+.professor-lessons__panel {
+  padding: 26px 30px;
+}
+
+.professor-lessons__hero h2,
+.professor-lessons__panel-header h3 {
+  margin: 0;
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.professor-lessons__hero p {
+  margin: 8px 0 0;
+  color: #60708f;
+  line-height: 1.6;
+}
+
+.professor-lessons__error {
+  padding: 14px 16px;
+  border-radius: 18px;
+  border: 1px solid #fecaca;
+  background: #fff1f2;
+  color: #b91c1c;
+  font-weight: 600;
+}
+
+.professor-lessons__filters {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.professor-lessons__month input,
+.professor-lessons__select select {
+  min-width: 240px;
+  min-height: 48px;
+  border-radius: 16px;
+  border: 1px solid #e5eaf3;
+  background: #f7f9fc;
+  color: #111827;
+  font-size: 1rem;
+  padding: 0 16px;
+}
+
+.professor-lessons__stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 22px;
+}
+
+.professor-lessons__panel-header {
+  margin-bottom: 18px;
+}
+
+.professor-lessons__table-wrap {
+  overflow-x: auto;
+}
+
+.professor-lessons__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.professor-lessons__table th,
+.professor-lessons__table td {
+  padding: 18px 10px;
+  text-align: left;
+  border-bottom: 1px solid #edf2fa;
+  white-space: nowrap;
+}
+
+.professor-lessons__table th {
+  font-size: 0.96rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.professor-lessons__table td {
+  color: #1f2937;
+  font-size: 0.98rem;
+}
+
+.professor-lessons__status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 112px;
+  min-height: 34px;
+  padding: 0 14px;
+  border-radius: 999px;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.professor-lessons__status--pending,
+.professor-lessons__status--rescheduled {
+  color: #1d4ed8;
+  background: #e8f0ff;
+}
+
+.professor-lessons__status--completed {
+  color: #15803d;
+  background: #eaf9ef;
+}
+
+.professor-lessons__status--overdue,
+.professor-lessons__status--reschedule-pending {
+  color: #b45309;
+  background: #fff5db;
+}
+
+.professor-lessons__status--cancelled,
+.professor-lessons__status--compensated {
+  color: #b91c1c;
+  background: #fff1f2;
+}
+
+.professor-lessons__icon-button {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  border: 1px solid #e5eaf3;
+  background: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.professor-lessons__icon-button:hover {
+  transform: translateY(-1px);
+  border-color: #bfe6cb;
+  background: #f3fcf6;
+}
+
+.professor-lessons__icon-button img {
+  width: 18px;
+  height: 18px;
+}
+
+.professor-lessons__empty {
+  text-align: center;
+  color: #60708f;
+}
+
+.professor-lessons__modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 20;
+}
+
+.professor-lessons__modal {
+  width: min(760px, 100%);
+  padding: 28px;
+}
+
+.professor-lessons__modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.professor-lessons__modal-header h3 {
+  margin: 0;
+  font-size: 1.35rem;
+  color: #111827;
+}
+
+.professor-lessons__modal-header p {
+  margin: 8px 0 0;
+  color: #60708f;
+}
+
+.professor-lessons__modal-close {
+  width: 40px;
+  height: 40px;
+  border: 1px solid #e5eaf3;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #111827;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.professor-lessons__modal-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.professor-lessons__detail-card {
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px solid #edf2fa;
+  background: #f8fbff;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.professor-lessons__detail-card strong {
+  color: #60708f;
+  font-size: 0.88rem;
+}
+
+.professor-lessons__detail-card span {
+  color: #111827;
+  font-weight: 700;
+}
+
+.professor-lessons__detail-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.professor-lessons__detail-list div {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: #475569;
+}
+
+.professor-lessons__detail-list img {
+  width: 18px;
+  height: 18px;
+}
+
+.professor-lessons__notes {
+  border-top: 1px solid #edf2fa;
+  padding-top: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.professor-lessons__notes p {
+  margin: 0;
+  color: #475569;
+  line-height: 1.6;
+}
+
+.professor-lessons__notes strong {
+  color: #111827;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (max-width: 1100px) {
+  .professor-lessons__stats,
+  .professor-lessons__modal-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .professor-lessons__hero,
+  .professor-lessons__panel {
+    padding: 22px 20px;
+  }
+
+  .professor-lessons__stats,
+  .professor-lessons__modal-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .professor-lessons__select select {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .professor-lessons__month input {
+    width: 100%;
+    min-width: 0;
+  }
+}
