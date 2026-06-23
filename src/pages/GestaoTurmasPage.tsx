@@ -43,6 +43,15 @@ import pencilIcon from "../assets/icons/pencil-svgrepo-com.svg";
 import trashIcon from "../assets/icons/trash-alt-svgrepo-com.svg";
 import teacherIcon from "../assets/icons/teacher-professor-avatar-svgrepo-com.svg";
 import userPlusIcon from "../assets/icons/user-plus-alt-1-svgrepo-com.svg";
+import {
+  applyDirection,
+  compareNumber,
+  compareText,
+  cycleSort,
+  getSortIndicator,
+  getSortLabel,
+  type SortState,
+} from "../utils/tableSorting";
 
 import "./GestaoTurmasPage.css";
 
@@ -51,6 +60,8 @@ type ClassDetails = {
   lessons: Lesson[];
   lessonsLoaded: boolean;
 };
+
+type ClassSortKey = "id" | "name" | "schedule" | "teacher" | "students" | "lessons";
 
 function getErrorMessage(error: unknown, fallback: string) {
   if (axios.isAxiosError(error)) {
@@ -102,6 +113,10 @@ function buildClassAddress(values: ClassFormValues) {
 export default function GestaoTurmasPage() {
   const [search, setSearch] = useState("");
   const [lessonOrder, setLessonOrder] = useState<"name" | "closest" | "farthest">("name");
+  const [sort, setSort] = useState<SortState<ClassSortKey>>({
+    key: null,
+    direction: "asc",
+  });
   const [loading, setLoading] = useState(true);
   const [feedback, setFeedback] = useState("");
   const [createOpen, setCreateOpen] = useState(false);
@@ -129,6 +144,10 @@ export default function GestaoTurmasPage() {
     removeClass,
     invalidateStudentClassLinks,
   } = useGestaoData();
+
+  const professorNames = useMemo(() => {
+    return new Map(allProfessors.map((professor) => [professor.id, professor.nome]));
+  }, [allProfessors]);
 
   useEffect(() => {
     let cancelled = false;
@@ -199,6 +218,45 @@ export default function GestaoTurmasPage() {
       c.name.toLowerCase().includes(term)
     );
 
+    if (sort.key) {
+      return [...base].sort((left, right) => {
+        let comparison = 0;
+
+        switch (sort.key) {
+          case "id":
+            comparison = compareNumber(left.id, right.id);
+            break;
+          case "name":
+            comparison = compareText(left.name, right.name);
+            break;
+          case "schedule":
+            comparison = compareText(left.recurrence_desc, right.recurrence_desc);
+            break;
+          case "teacher":
+            comparison = compareText(
+              left.teacher_id ? professorNames.get(left.teacher_id) : "",
+              right.teacher_id ? professorNames.get(right.teacher_id) : ""
+            );
+            break;
+          case "students":
+            comparison = compareNumber(left.student_count, right.student_count);
+            break;
+          case "lessons":
+            comparison = compareNumber(left.lessons_total, right.lessons_total);
+            if (comparison === 0) {
+              comparison = compareNumber(left.lessons_completed, right.lessons_completed);
+            }
+            break;
+        }
+
+        if (comparison === 0) {
+          comparison = compareText(left.name, right.name);
+        }
+
+        return applyDirection(comparison, sort.direction);
+      });
+    }
+
     return [...base].sort((left, right) => {
       if (lessonOrder === "closest") {
         const leftRemaining = (left.lessons_total ?? 0) - (left.lessons_completed ?? 0);
@@ -214,11 +272,24 @@ export default function GestaoTurmasPage() {
 
       return left.name.localeCompare(right.name);
     });
-  }, [classes, lessonOrder, search]);
+  }, [classes, lessonOrder, professorNames, search, sort]);
 
-  const professorNames = useMemo(() => {
-    return new Map(allProfessors.map((professor) => [professor.id, professor.nome]));
-  }, [allProfessors]);
+  function renderSortHeader(label: string, key: ClassSortKey) {
+    return (
+      <div className="gestao-table__name-header">
+        <span>{label}</span>
+        <button
+          type="button"
+          className="gestao-table__sort-button"
+          onClick={() => setSort((current) => cycleSort(current, key))}
+          aria-label={getSortLabel(sort, key, label)}
+          title={getSortLabel(sort, key, label)}
+        >
+          {getSortIndicator(sort, key)}
+        </button>
+      </div>
+    );
+  }
 
   async function handleDelete(id: number) {
     if (!confirm("Deseja encerrar a turma? As aulas em aberto serao canceladas.")) return;
@@ -626,12 +697,12 @@ export default function GestaoTurmasPage() {
             <table className="gestao-professores__table">
               <thead>
                 <tr>
-                  <th>ID</th>
-                  <th>Nome da Turma</th>
-                  <th>Horário</th>
-                  <th>Professor</th>
-                  <th>Alunos</th>
-                  <th>Aulas</th>
+                  <th>{renderSortHeader("ID", "id")}</th>
+                  <th>{renderSortHeader("Nome da Turma", "name")}</th>
+                  <th>{renderSortHeader("Horário", "schedule")}</th>
+                  <th>{renderSortHeader("Professor", "teacher")}</th>
+                  <th>{renderSortHeader("Alunos", "students")}</th>
+                  <th>{renderSortHeader("Aulas", "lessons")}</th>
                   <th>Ações</th>
                 </tr>
               </thead>

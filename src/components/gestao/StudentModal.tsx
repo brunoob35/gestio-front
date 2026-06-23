@@ -1,3 +1,4 @@
+import axios from "axios";
 import { useEffect, useMemo, useState } from "react";
 import type { CustomerRow } from "../../services/customers";
 import "./StudentModal.css";
@@ -109,6 +110,7 @@ export default function StudentModal({
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const [submitAttempted, setSubmitAttempted] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
   useEffect(() => {
     if (!open) return;
@@ -134,6 +136,7 @@ export default function StudentModal({
     });
     setStep(0);
     setSubmitAttempted(false);
+    setSubmitError("");
   }, [initialValues, open]);
 
   const activeCustomers = useMemo(
@@ -152,6 +155,7 @@ export default function StudentModal({
       ...current,
       [name]: value,
     }));
+    setSubmitError("");
   }
 
   function updateField<Key extends keyof StudentFormValues>(field: Key, value: StudentFormValues[Key]) {
@@ -159,6 +163,7 @@ export default function StudentModal({
       ...current,
       [field]: value,
     }));
+    setSubmitError("");
   }
 
   function switchResponsibleMode(nextMode: "existing" | "new") {
@@ -191,6 +196,30 @@ export default function StudentModal({
       responsible_query: query,
       responsible_customer_id: matched ? String(matched.id) : "",
     }));
+  }
+
+  async function lookupResponsibleCep(cepValue: string) {
+    const digits = cepValue.replace(/\D/g, "");
+    if (digits.length !== 8) return;
+
+    try {
+      const response = await fetch(`https://viacep.com.br/ws/${digits}/json/`);
+      const data = (await response.json()) as Record<string, unknown>;
+
+      if (data.erro === true) return;
+
+      setForm((current) => ({
+        ...current,
+        responsible_cep: formatCep(String(data.cep ?? digits)),
+        responsible_rua: String(data.logradouro ?? current.responsible_rua ?? ""),
+        responsible_bairro: String(data.bairro ?? current.responsible_bairro ?? ""),
+        responsible_cidade: String(data.localidade ?? current.responsible_cidade ?? ""),
+        responsible_estado: String(data.estado ?? data.uf ?? current.responsible_estado ?? ""),
+        responsible_pais: current.responsible_pais || "Brasil",
+      }));
+    } catch (error) {
+      console.error("Erro ao consultar CEP:", error);
+    }
   }
 
   async function handleSubmit(event: React.FormEvent) {
@@ -226,10 +255,28 @@ export default function StudentModal({
     }
 
     setLoading(true);
+    setSubmitError("");
 
     try {
       await onSubmit(form);
       onClose();
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const apiMessage =
+          typeof error.response?.data === "string"
+            ? error.response.data
+            : typeof error.response?.data?.erro === "string"
+            ? error.response.data.erro
+            : typeof error.response?.data?.error === "string"
+            ? error.response.data.error
+            : typeof error.response?.data?.message === "string"
+            ? error.response.data.message
+            : "";
+
+        setSubmitError(apiMessage || "Não foi possível salvar o aluno.");
+      } else {
+        setSubmitError("Não foi possível salvar o aluno.");
+      }
     } finally {
       setLoading(false);
     }
@@ -372,6 +419,7 @@ export default function StudentModal({
                       type="text"
                       value={form.responsible_cep}
                       onChange={(event) => updateField("responsible_cep", formatCep(event.target.value))}
+                      onBlur={(event) => void lookupResponsibleCep(event.target.value)}
                       placeholder="00000-000"
                     />
                   </label>
@@ -450,6 +498,12 @@ export default function StudentModal({
           ) : null}
 
           <div className="student-modal__actions">
+            {submitError ? (
+              <p className="student-modal__feedback student-modal__feedback--error">
+                {submitError}
+              </p>
+            ) : null}
+
             <button
               type="button"
               className="student-modal__button student-modal__button--secondary"

@@ -4,7 +4,7 @@ import type { FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { api } from "../services/api";
-import { decodeToken, saveToken } from "../services/auth";
+import { clearLGPDPending, decodeToken, hasPermission, saveToken, setLGPDPending } from "../services/auth";
 import dashboardIcon from "../assets/icons/dashboard-svgrepo-com.svg";
 
 import "./LoginPage.css";
@@ -12,6 +12,7 @@ import "./LoginPage.css";
 type LoginResponse = {
   token?: string;
   first_access?: boolean;
+  lgpd_pending?: boolean;
   email?: string;
 };
 
@@ -54,20 +55,27 @@ export default function LoginPage() {
       }
 
       saveToken(token);
+      setLGPDPending(response.data?.lgpd_pending === true);
 
       const decoded = decodeToken(token);
 
       if (!decoded) {
+        clearLGPDPending();
         setErro("Não foi possível decodificar o token.");
         return;
       }
 
-      if (decoded.permissions === 1 || decoded.permissions === 4) {
+      if (response.data?.lgpd_pending) {
+        navigate("/lgpd-consent", { replace: true });
+        return;
+      }
+
+      if (hasPermission(decoded.permissions, 1) || hasPermission(decoded.permissions, 4)) {
         navigate("/gestao", { replace: true });
         return;
       }
 
-      if (decoded.permissions === 2) {
+      if (hasPermission(decoded.permissions, 2)) {
         navigate("/professor", { replace: true });
         return;
       }

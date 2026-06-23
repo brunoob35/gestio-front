@@ -66,6 +66,8 @@ type CustomerModalProps = {
   mode: "create" | "edit";
   availableStudents: StudentRow[];
   initialValues?: CustomerFormValues;
+  cpfPreview?: string;
+  rgPreview?: string;
   onClose: () => void;
   onSubmit: (values: CustomerFormValues) => Promise<void>;
 };
@@ -103,6 +105,8 @@ export default function CustomerModal({
   mode,
   availableStudents,
   initialValues,
+  cpfPreview,
+  rgPreview,
   onClose,
   onSubmit,
 }: CustomerModalProps) {
@@ -348,9 +352,9 @@ export default function CustomerModal({
     event.preventDefault();
     setSubmitAttempted(true);
 
-    if (!values.nome.trim() || !values.cpf.trim() || !values.telefone.trim()) {
+    if (!values.nome.trim() || !values.telefone.trim() || (mode === "create" && !values.cpf.trim())) {
       setActiveTab("customer");
-      window.alert("Preencha nome, CPF e telefone do cliente antes de salvar.");
+      window.alert(`Preencha nome, telefone${mode === "create" ? " e CPF" : ""} do cliente antes de salvar.`);
       return;
     }
 
@@ -434,14 +438,14 @@ export default function CustomerModal({
                 />
               </label>
 
-              <label className={submitAttempted && !values.cpf.trim() ? "is-invalid" : ""}>
+              <label className={submitAttempted && mode === "create" && !values.cpf.trim() ? "is-invalid" : ""}>
                 <span>CPF *</span>
                 <input
                   type="text"
                   value={values.cpf}
                   onChange={(event) => updateField("cpf", event.target.value)}
-                  placeholder="000.000.000-00"
-                  required
+                  placeholder={mode === "edit" && cpfPreview ? `Atual: ${cpfPreview}` : "000.000.000-00"}
+                  required={mode === "create"}
                 />
               </label>
 
@@ -451,7 +455,7 @@ export default function CustomerModal({
                   type="text"
                   value={values.rg}
                   onChange={(event) => updateField("rg", event.target.value)}
-                  placeholder="00.000.000-0"
+                  placeholder={mode === "edit" && rgPreview ? `Atual: ${rgPreview}` : "00.000.000-0"}
                 />
               </label>
 

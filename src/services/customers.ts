@@ -26,6 +26,9 @@ export type CustomerRow = {
   studentsCount: number;
   contractsCount: number;
   addresses: CustomerAddress[];
+  lgpd_aceito?: boolean;
+  lgpd_aceito_em?: string;
+  lgpd_finalidade?: string;
   created_at?: string;
   updated_at?: string;
   students?: StudentRow[];
@@ -39,7 +42,7 @@ export type CustomerStudentPayload = {
 
 export type CustomerPayload = {
   nome: string;
-  cpf: string;
+  cpf?: string;
   email?: string;
   telefone: string;
   rg?: string;
@@ -105,6 +108,9 @@ export function normalizeCustomer(item: RawCustomer): CustomerRow {
     studentsCount: asNumber(item.students_count) || rawStudents.length,
     contractsCount: asNumber(item.contracts_count),
     addresses: rawAddresses.map((address) => normalizeAddress(address as Record<string, unknown>)),
+    lgpd_aceito: asBoolean(item.lgpd_aceito),
+    lgpd_aceito_em: asString(item.lgpd_aceito_em) || undefined,
+    lgpd_finalidade: asString(item.lgpd_finalidade) || undefined,
     created_at: asString(item.created_at) || undefined,
     updated_at: asString(item.updated_at) || undefined,
     students: rawStudents.map((student) => normalizeStudent(student as Record<string, unknown>)),

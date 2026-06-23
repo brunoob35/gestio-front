@@ -19,9 +19,20 @@ import customerStudentsIcon from "../assets/icons/user-circle-svgrepo-com.svg";
 import eyeIcon from "../assets/icons/eye-show-svgrepo-com.svg";
 import pencilIcon from "../assets/icons/pencil-svgrepo-com.svg";
 import trashIcon from "../assets/icons/trash-alt-svgrepo-com.svg";
+import { maskDocumentPreview } from "../utils/documents";
+import {
+  applyDirection,
+  compareNumber,
+  compareText,
+  cycleSort,
+  getSortIndicator,
+  getSortLabel,
+  type SortState,
+} from "../utils/tableSorting";
 import "./GestaoClientesPage.css";
 
 type CustomerStudentsState = Record<number, StudentRow[]>;
+type CustomerSortKey = "nome" | "cpf" | "contato" | "alunos" | "contratos" | "status";
 
 function formatCep(value: string) {
   const digits = value.replace(/\D/g, "").slice(0, 8);
@@ -32,8 +43,8 @@ function formatCep(value: string) {
 function buildInitialValues(customer: CustomerRow): CustomerFormValues {
   return {
     nome: customer.nome,
-    cpf: customer.cpf,
-    rg: customer.rg,
+    cpf: "",
+    rg: "",
     email: customer.email,
     telefone: customer.telefone,
     addresses: customer.addresses.map((address): CustomerAddressFormValues => ({
@@ -64,6 +75,10 @@ export default function GestaoClientesPage() {
   } = useGestaoData();
 
   const [search, setSearch] = useState("");
+  const [sort, setSort] = useState<SortState<CustomerSortKey>>({
+    key: null,
+    direction: "asc",
+  });
   const [loading, setLoading] = useState(true);
   const [feedback, setFeedback] = useState("");
   const [createOpen, setCreateOpen] = useState(false);
@@ -99,17 +114,53 @@ export default function GestaoClientesPage() {
 
   const filteredCustomers = useMemo(() => {
     const term = search.trim().toLowerCase();
+    const filtered = term
+      ? customers.filter((customer) => {
+          return (
+            customer.nome.toLowerCase().includes(term) ||
+            customer.email.toLowerCase().includes(term) ||
+            customer.cpf.toLowerCase().includes(term)
+          );
+        })
+      : customers;
 
-    if (!term) return customers;
+    if (!sort.key) {
+      return filtered;
+    }
 
-    return customers.filter((customer) => {
-      return (
-        customer.nome.toLowerCase().includes(term) ||
-        customer.email.toLowerCase().includes(term) ||
-        customer.cpf.toLowerCase().includes(term)
-      );
+    return [...filtered].sort((left, right) => {
+      let comparison = 0;
+
+      switch (sort.key) {
+        case "nome":
+          comparison = compareText(left.nome, right.nome);
+          break;
+        case "cpf":
+          comparison = compareText(left.cpf, right.cpf);
+          break;
+        case "contato":
+          comparison =
+            compareText(left.email, right.email) ||
+            compareText(left.telefone, right.telefone);
+          break;
+        case "alunos":
+          comparison = compareNumber(left.studentsCount, right.studentsCount);
+          break;
+        case "contratos":
+          comparison = compareNumber(left.contractsCount, right.contractsCount);
+          break;
+        case "status":
+          comparison = compareText(left.status, right.status);
+          break;
+      }
+
+      if (comparison === 0) {
+        comparison = compareText(left.nome, right.nome);
+      }
+
+      return applyDirection(comparison, sort.direction);
     });
-  }, [customers, search]);
+  }, [customers, search, sort]);
 
   const activeCustomers = useMemo(
     () => filteredCustomers.filter((customer) => customer.status === "ativo"),
@@ -120,6 +171,170 @@ export default function GestaoClientesPage() {
     () => filteredCustomers.filter((customer) => customer.status === "inativo"),
     [filteredCustomers]
   );
+
+  function renderSortHeader(label: string, key: CustomerSortKey) {
+    return (
+      <div className="gestao-table__name-header">
+        <span>{label}</span>
+        <button
+          type="button"
+          className="gestao-table__sort-button"
+          onClick={() => setSort((current) => cycleSort(current, key))}
+          aria-label={getSortLabel(sort, key, label)}
+          title={getSortLabel(sort, key, label)}
+        >
+          {getSortIndicator(sort, key)}
+        </button>
+      </div>
+    );
+  }
+
+  function renderTable(title: string, items: CustomerRow[], emptyMessage: string) {
+    return (
+      <section className="gestao-professores__table-card">
+        <div className="gestao-professores__table-header">
+          <h3>{title}</h3>
+        </div>
+
+        <div className="gestao-professores__table-wrapper">
+          <table className="gestao-professores__table">
+            <thead>
+              <tr>
+                <th>{renderSortHeader("Nome", "nome")}</th>
+                <th>{renderSortHeader("CPF", "cpf")}</th>
+                <th>{renderSortHeader("Contato", "contato")}</th>
+                <th>{renderSortHeader("Alunos", "alunos")}</th>
+                <th>{renderSortHeader("Contratos", "contratos")}</th>
+                <th>{renderSortHeader("Status", "status")}</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {loading ? (
+                <tr>
+                  <td colSpan={7} className="gestao-professores__empty">
+                    Carregando clientes...
+                  </td>
+                </tr>
+              ) : items.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="gestao-professores__empty">
+                    {emptyMessage}
+                  </td>
+                </tr>
+              ) : (
+                items.map((customer) => {
+                  const isExpanded = expandedCustomerId === customer.id;
+                  const linkedStudents = customerStudents[customer.id] ?? [];
+                  const linkedAddresses = customerAddresses[customer.id] ?? [];
+
+                  return (
+                    <Fragment key={customer.id}>
+                      <tr className={isExpanded ? "gestao-clientes__row is-expanded" : "gestao-clientes__row"}>
+                        <td>{customer.nome}</td>
+                        <td>{maskDocumentPreview(customer.cpf)}</td>
+                        <td>
+                          <div className="gestao-clientes__contact-cell">
+                            <span>{customer.email || "—"}</span>
+                            <span>{customer.telefone}</span>
+                          </div>
+                        </td>
+                        <td>
+                          <div className="gestao-clientes__count-cell">
+                            <img src={customerStudentsIcon} alt="" aria-hidden="true" />
+                            <span>{customer.studentsCount}</span>
+                          </div>
+                        </td>
+                        <td>{customer.contractsCount}</td>
+                        <td>
+                          <span className={`gestao-clientes__status gestao-clientes__status--${customer.status}`}>
+                            {customer.status}
+                          </span>
+                        </td>
+                        <td>
+                          <div className="gestao-professores__actions">
+                            <button type="button" onClick={() => void handleToggleExpand(customer)} title="Visualizar cliente" aria-label="Visualizar cliente">
+                              <img src={eyeIcon} alt="Ver cliente" />
+                            </button>
+
+                            <button type="button" onClick={() => void handleStartEdit(customer)} title="Editar cliente" aria-label="Editar cliente">
+                              <img src={pencilIcon} alt="Editar cliente" />
+                            </button>
+
+                            <button type="button" onClick={() => handleDelete(customer)} title="Desativar cliente" aria-label="Desativar cliente">
+                              <img
+                                className="gestao-professores__trash-icon"
+                                src={trashIcon}
+                                alt="Desativar cliente"
+                              />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+
+                      {isExpanded ? (
+                        <tr className="gestao-clientes__details-row">
+                          <td colSpan={7}>
+                            <div className="gestao-clientes__details-card">
+                              <div className="gestao-clientes__detail-block">
+                                <h4>Informações gerais</h4>
+                                <ul>
+                                  <li><strong>ID:</strong> {customer.code}</li>
+                                  <li><strong>Nome:</strong> {customer.nome}</li>
+                                  <li><strong>Email:</strong> {customer.email || "—"}</li>
+                                  <li><strong>Telefone:</strong> {customer.telefone || "—"}</li>
+                                  <li><strong>Status:</strong> {customer.status}</li>
+                                </ul>
+                              </div>
+
+                              <div className="gestao-clientes__detail-block">
+                                <h4>Endereços</h4>
+                                {detailsLoadingId === customer.id ? (
+                                  <p>Carregando endereços...</p>
+                                ) : linkedAddresses.length ? (
+                                  <ul>
+                                    {linkedAddresses.map((address, index) => (
+                                      <li key={`${customer.id}-address-${index}`}>
+                                        {`${formatCep(address.cep)} • ${address.rua}, ${address.numero} • ${address.bairro} • ${address.cidade}/${address.estado}`}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                ) : (
+                                  <p>Nenhum endereço cadastrado.</p>
+                                )}
+                              </div>
+
+                              <div className="gestao-clientes__detail-block">
+                                <h4>Alunos vinculados</h4>
+                                {detailsLoadingId === customer.id ? (
+                                  <p>Carregando alunos...</p>
+                                ) : linkedStudents.length ? (
+                                  <ul>
+                                    {linkedStudents.map((student) => (
+                                      <li key={`${customer.id}-student-${student.id}`}>
+                                        {student.nome}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                ) : (
+                                  <p>Nenhum aluno vinculado.</p>
+                                )}
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      ) : null}
+                    </Fragment>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    );
+  }
 
   async function handleCreate(values: CustomerFormValues) {
     try {
@@ -202,8 +417,8 @@ export default function GestaoClientesPage() {
     try {
       const updatedCustomer = await updateCustomer(editingCustomer.id, {
         nome: values.nome,
-        cpf: values.cpf,
-        rg: values.rg,
+        ...(values.cpf.trim() ? { cpf: values.cpf } : {}),
+        ...(values.rg.trim() ? { rg: values.rg } : {}),
         email: values.email,
         telefone: values.telefone,
         enderecos: values.addresses
@@ -338,164 +553,6 @@ export default function GestaoClientesPage() {
     setEditingCustomer(detailedCustomer);
   }
 
-  function renderTable(title: string, items: CustomerRow[], emptyMessage: string) {
-    return (
-      <section className="gestao-professores__table-card">
-        <div className="gestao-professores__table-header">
-          <h3>{title}</h3>
-        </div>
-
-        <div className="gestao-professores__table-wrapper">
-          <table className="gestao-professores__table">
-            <thead>
-              <tr>
-                <th>Nome</th>
-                <th>CPF</th>
-                <th>Contato</th>
-                <th>Alunos</th>
-                <th>Contratos</th>
-                <th>Status</th>
-                <th>Ações</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {loading ? (
-                <tr>
-                  <td colSpan={7} className="gestao-professores__empty">
-                    Carregando clientes...
-                  </td>
-                </tr>
-              ) : items.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="gestao-professores__empty">
-                    {emptyMessage}
-                  </td>
-                </tr>
-              ) : (
-                items.map((customer) => {
-                  const isExpanded = expandedCustomerId === customer.id;
-                  const linkedStudents = customerStudents[customer.id] ?? [];
-                  const linkedAddresses = customerAddresses[customer.id] ?? [];
-
-                  return (
-                    <Fragment key={customer.id}>
-                      <tr className={isExpanded ? "gestao-clientes__row is-expanded" : "gestao-clientes__row"}>
-                        <td>{customer.nome}</td>
-                        <td>{customer.cpf}</td>
-                        <td>
-                          <div className="gestao-clientes__contact-cell">
-                            <span>{customer.email || "—"}</span>
-                            <span>{customer.telefone}</span>
-                          </div>
-                        </td>
-                        <td>
-                          <div className="gestao-clientes__count-cell">
-                            <img src={customerStudentsIcon} alt="" aria-hidden="true" />
-                            <span>{customer.studentsCount}</span>
-                          </div>
-                        </td>
-                        <td>{customer.contractsCount}</td>
-                        <td>
-                          <span className={`gestao-clientes__status gestao-clientes__status--${customer.status}`}>
-                            {customer.status}
-                          </span>
-                        </td>
-                        <td>
-                          <div className="gestao-professores__actions">
-                            <button type="button" onClick={() => void handleToggleExpand(customer)} title="Visualizar cliente" aria-label="Visualizar cliente">
-                              <img src={eyeIcon} alt="Ver cliente" />
-                            </button>
-
-                            <button type="button" onClick={() => void handleStartEdit(customer)} title="Editar cliente" aria-label="Editar cliente">
-                              <img src={pencilIcon} alt="Editar cliente" />
-                            </button>
-
-                            <button type="button" onClick={() => handleDelete(customer)} title="Desativar cliente" aria-label="Desativar cliente">
-                              <img
-                                className="gestao-professores__trash-icon"
-                                src={trashIcon}
-                                alt="Desativar cliente"
-                              />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-
-                      {isExpanded ? (
-                        <tr className="gestao-clientes__details-row">
-                          <td colSpan={7}>
-                            <div className="gestao-clientes__details-card">
-                              <div className="gestao-clientes__detail-block">
-                                <h4>Endereços</h4>
-                                {detailsLoadingId === customer.id ? (
-                                  <p>Carregando endereços...</p>
-                                ) : linkedAddresses.length ? (
-                                  <ul className="gestao-clientes__address-list">
-                                    {linkedAddresses.map((address, index) => (
-                                      <li key={`${customer.id}-address-${index}`} className="gestao-clientes__address-card">
-                                        <div className="gestao-clientes__address-main">
-                                          <strong>
-                                            {address.rua || "Logradouro não informado"}
-                                            {address.numero ? `, ${address.numero}` : ""}
-                                          </strong>
-                                          <span>
-                                            {address.complemento || "Sem complemento"}
-                                          </span>
-                                        </div>
-
-                                        <div className="gestao-clientes__address-meta">
-                                          <span>
-                                            {[address.bairro, address.cidade, address.estado]
-                                              .filter(Boolean)
-                                              .join(" • ")}
-                                          </span>
-                                          <span>{address.pais || "Brasil"}</span>
-                                        </div>
-
-                                        <span className="gestao-clientes__address-cep">
-                                          {address.cep ? formatCep(address.cep) : "CEP não informado"}
-                                        </span>
-                                      </li>
-                                    ))}
-                                  </ul>
-                                ) : (
-                                  <p>Nenhum endereço informado.</p>
-                                )}
-                              </div>
-
-                              <div className="gestao-clientes__detail-block">
-                                <h4>Alunos vinculados</h4>
-                                {detailsLoadingId === customer.id ? (
-                                  <p>Carregando alunos vinculados...</p>
-                                ) : linkedStudents.length ? (
-                                  <ul className="gestao-clientes__student-list">
-                                    {linkedStudents.map((student) => (
-                                      <li key={student.id}>
-                                        <strong>{student.nome}</strong>
-                                        <span>{student.status}</span>
-                                      </li>
-                                    ))}
-                                  </ul>
-                                ) : (
-                                  <p>Nenhum aluno vinculado a este cliente.</p>
-                                )}
-                              </div>
-                            </div>
-                          </td>
-                        </tr>
-                      ) : null}
-                    </Fragment>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
-      </section>
-    );
-  }
-
   return (
     <GestaoShell title="Clientes">
       <section className="gestao-clientes">
@@ -549,6 +606,8 @@ export default function GestaoClientesPage() {
           mode="edit"
           availableStudents={students}
           initialValues={editingCustomer ? buildInitialValues(editingCustomer) : undefined}
+          cpfPreview={editingCustomer ? maskDocumentPreview(editingCustomer.cpf) : undefined}
+          rgPreview={editingCustomer ? maskDocumentPreview(editingCustomer.rg) : undefined}
           onClose={() => setEditingCustomer(null)}
           onSubmit={handleEdit}
         />

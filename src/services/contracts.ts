@@ -50,6 +50,11 @@ export type ContractRow = {
   updated_at?: string;
 };
 
+export type FetchContractsOptions = {
+  search?: string;
+  group?: "all" | "main" | "inactive";
+};
+
 export type ContractCustomerPayload = {
   nome: string;
   cpf: string;
@@ -153,9 +158,17 @@ export function normalizeContract(item: RawRecord): ContractRow {
   };
 }
 
-export async function fetchContracts(search?: string) {
+export async function fetchContracts(options?: string | FetchContractsOptions) {
+  const normalizedOptions =
+    typeof options === "string" ? { search: options } : options ?? {};
+  const params = {
+    ...(normalizedOptions.search ? { q: normalizedOptions.search } : {}),
+    ...(normalizedOptions.group && normalizedOptions.group !== "all"
+      ? { group: normalizedOptions.group }
+      : {}),
+  };
   const response = await api.get("/contracts", {
-    params: search ? { q: search } : undefined,
+    params: Object.keys(params).length ? params : undefined,
   });
   const data = Array.isArray(response.data) ? response.data : [];
   return data.map((item) => normalizeContract(item as RawRecord));

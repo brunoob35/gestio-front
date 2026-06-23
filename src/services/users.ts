@@ -10,6 +10,9 @@ export type UserRow = {
   cpf?: string;
   rg?: string;
   nascimento?: string;
+  lgpd_aceito?: boolean;
+  lgpd_aceito_em?: string;
+  lgpd_finalidade?: string;
   status: string;
 };
 
@@ -27,6 +30,8 @@ export type UserPayload = {
   rg?: string;
   ativo?: boolean;
   nascimento?: string;
+  lgpd_aceito?: boolean;
+  lgpd_finalidade?: string;
 };
 
 type RawUser = Record<string, unknown>;
@@ -63,6 +68,9 @@ function normalizeUser(item: RawUser): UserRow {
     cpf: asString(item.cpf),
     rg: asString(item.rg),
     nascimento: asString(item.nascimento) || asString(item.birth_date),
+    lgpd_aceito: item.lgpd_aceito === true || item.lgpd_aceito === 1,
+    lgpd_aceito_em: asString(item.lgpd_aceito_em) || undefined,
+    lgpd_finalidade: asString(item.lgpd_finalidade) || undefined,
     status: ativo ? "ativo" : "inativo",
   };
 }

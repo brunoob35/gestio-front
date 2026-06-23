@@ -105,6 +105,29 @@
   box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12);
 }
 
+.gestao-settings__consent {
+  margin-top: 18px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px 18px;
+  border: 1px solid #d7dce5;
+  border-radius: 16px;
+  background: #f8fafc;
+}
+
+.gestao-settings__consent input {
+  width: 18px;
+  min-width: 18px;
+  min-height: 18px;
+  margin-top: 2px;
+}
+
+.gestao-settings__consent span {
+  line-height: 1.6;
+  color: #475569;
+}
+
 .gestao-settings__actions {
   margin-top: 22px;
   display: flex;
@@ -154,5 +177,9 @@
 
   .gestao-settings__actions button {
     width: 100%;
+  }
+
+  .gestao-settings__consent {
+    align-items: flex-start;
   }
 }

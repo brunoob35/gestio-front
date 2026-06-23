@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { type Dispatch, type SetStateAction, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import GestaoShell from "../components/gestao/GestaoShell";
@@ -27,14 +27,34 @@ import bookOpenIcon from "../assets/icons/book-open-svgrepo-com.svg";
 import eyeIcon from "../assets/icons/eye-show-svgrepo-com.svg";
 import pencilIcon from "../assets/icons/pencil-svgrepo-com.svg";
 import trashIcon from "../assets/icons/trash-alt-svgrepo-com.svg";
+import { maskDocumentPreview } from "../utils/documents";
+import {
+  applyDirection,
+  compareNumber,
+  compareText,
+  cycleSort,
+  getSortIndicator,
+  getSortLabel,
+  type SortState,
+} from "../utils/tableSorting";
 
 import "./GestaoProfessoresPage.css";
+
+type UserTableSortKey = "nome" | "email" | "telefone" | "turmas" | "status";
 
 export default function GestaoProfessoresPage() {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [showInactive, setShowInactive] = useState(false);
+  const [professorSort, setProfessorSort] = useState<SortState<UserTableSortKey>>({
+    key: null,
+    direction: "asc",
+  });
+  const [managerSort, setManagerSort] = useState<SortState<UserTableSortKey>>({
+    key: null,
+    direction: "asc",
+  });
 
   const [createProfessorOpen, setCreateProfessorOpen] = useState(false);
   const [createManagerOpen, setCreateManagerOpen] = useState(false);
@@ -104,7 +124,7 @@ export default function GestaoProfessoresPage() {
     const term = search.trim().toLowerCase();
     const targetStatus = showInactive ? "inativo" : "ativo";
 
-    return professors.filter((item) => {
+    const filtered = professors.filter((item) => {
       if (item.status !== targetStatus) return false;
       if (!term) return true;
 
@@ -113,13 +133,43 @@ export default function GestaoProfessoresPage() {
         item.email.toLowerCase().includes(term)
       );
     });
-  }, [professors, search, showInactive]);
+
+    if (!professorSort.key) return filtered;
+
+    return [...filtered].sort((left, right) => {
+      let comparison = 0;
+
+      switch (professorSort.key) {
+        case "nome":
+          comparison = compareText(left.nome, right.nome);
+          break;
+        case "email":
+          comparison = compareText(left.email, right.email);
+          break;
+        case "telefone":
+          comparison = compareText(left.telefone, right.telefone);
+          break;
+        case "turmas":
+          comparison = compareNumber(left.turmasAtivas, right.turmasAtivas);
+          break;
+        case "status":
+          comparison = compareText(left.status, right.status);
+          break;
+      }
+
+      if (comparison === 0) {
+        comparison = compareText(left.nome, right.nome);
+      }
+
+      return applyDirection(comparison, professorSort.direction);
+    });
+  }, [professorSort, professors, search, showInactive]);
 
   const filteredManagers = useMemo(() => {
     const term = search.trim().toLowerCase();
     const targetStatus = showInactive ? "inativo" : "ativo";
 
-    return users.filter((item) => {
+    const filtered = users.filter((item) => {
       if (item.status !== targetStatus) return false;
       if (!term) return true;
 
@@ -128,18 +178,70 @@ export default function GestaoProfessoresPage() {
         item.email.toLowerCase().includes(term)
       );
     });
-  }, [users, search, showInactive]);
+
+    if (!managerSort.key) return filtered;
+
+    return [...filtered].sort((left, right) => {
+      let comparison = 0;
+
+      switch (managerSort.key) {
+        case "nome":
+          comparison = compareText(left.nome, right.nome);
+          break;
+        case "email":
+          comparison = compareText(left.email, right.email);
+          break;
+        case "telefone":
+          comparison = compareText(left.telefone, right.telefone);
+          break;
+        case "status":
+          comparison = compareText(left.status, right.status);
+          break;
+        default:
+          comparison = 0;
+          break;
+      }
+
+      if (comparison === 0) {
+        comparison = compareText(left.nome, right.nome);
+      }
+
+      return applyDirection(comparison, managerSort.direction);
+    });
+  }, [managerSort, search, showInactive, users]);
+
+  function renderSortHeader(
+    label: string,
+    key: UserTableSortKey,
+    sort: SortState<UserTableSortKey>,
+    setSort: Dispatch<SetStateAction<SortState<UserTableSortKey>>>
+  ) {
+    return (
+      <div className="gestao-table__name-header">
+        <span>{label}</span>
+        <button
+          type="button"
+          className="gestao-table__sort-button"
+          onClick={() => setSort((current) => cycleSort(current, key))}
+          aria-label={getSortLabel(sort, key, label)}
+          title={getSortLabel(sort, key, label)}
+        >
+          {getSortIndicator(sort, key)}
+        </button>
+      </div>
+    );
+  }
 
   async function handleCreateProfessor(values: ProfessorFormValues) {
     const createdProfessor = await createProfessor({
       nome: values.nome,
       email: values.email,
-      senha: values.senha,
       cpf: values.cpf,
       rg: values.rg,
       telefone: values.telefone,
       ativo: true,
       nascimento: `${values.nascimento}T00:00:00Z`,
+      ...(values.senha.trim() ? { senha: values.senha } : {}),
     });
 
     setProfessors((current) =>
@@ -162,12 +264,12 @@ export default function GestaoProfessoresPage() {
     const createdManager = await createManager({
       nome: values.nome,
       email: values.email,
-      senha: values.senha,
       cpf: values.cpf,
       rg: values.rg,
       telefone: values.telefone,
       ativo: true,
       nascimento: values.nascimento ? `${values.nascimento}T00:00:00Z` : undefined,
+      ...(values.senha.trim() ? { senha: values.senha } : {}),
     });
 
     setUsers((current) =>
@@ -191,8 +293,8 @@ export default function GestaoProfessoresPage() {
       nome: values.nome,
       email: values.email,
       telefone: values.telefone,
-      cpf: values.cpf,
-      rg: values.rg,
+      ...(values.cpf.trim() ? { cpf: values.cpf } : {}),
+      ...(values.rg.trim() ? { rg: values.rg } : {}),
       ...(values.nascimento
         ? { nascimento: `${values.nascimento}T00:00:00Z` }
         : {}),
@@ -228,8 +330,8 @@ export default function GestaoProfessoresPage() {
       nome: values.nome,
       email: values.email,
       telefone: values.telefone,
-      cpf: values.cpf,
-      rg: values.rg,
+      ...(values.cpf.trim() ? { cpf: values.cpf } : {}),
+      ...(values.rg.trim() ? { rg: values.rg } : {}),
       ...(values.nascimento
         ? { nascimento: `${values.nascimento}T00:00:00Z` }
         : {}),
@@ -356,11 +458,11 @@ export default function GestaoProfessoresPage() {
             <table className="gestao-professores__table">
               <thead>
                 <tr>
-                  <th>Nome</th>
-                  <th>Email</th>
-                  <th>Telefone</th>
-                  <th>Turmas Ativas</th>
-                  <th>Status</th>
+                  <th>{renderSortHeader("Nome", "nome", professorSort, setProfessorSort)}</th>
+                  <th>{renderSortHeader("Email", "email", professorSort, setProfessorSort)}</th>
+                  <th>{renderSortHeader("Telefone", "telefone", professorSort, setProfessorSort)}</th>
+                  <th>{renderSortHeader("Turmas Ativas", "turmas", professorSort, setProfessorSort)}</th>
+                  <th>{renderSortHeader("Status", "status", professorSort, setProfessorSort)}</th>
                   <th>Ações</th>
                 </tr>
               </thead>
@@ -444,10 +546,10 @@ export default function GestaoProfessoresPage() {
             <table className="gestao-professores__table gestao-professores__table--admins">
               <thead>
                 <tr>
-                  <th>Nome</th>
-                  <th>Email</th>
-                  <th>Telefone</th>
-                  <th>Status</th>
+                  <th>{renderSortHeader("Nome", "nome", managerSort, setManagerSort)}</th>
+                  <th>{renderSortHeader("Email", "email", managerSort, setManagerSort)}</th>
+                  <th>{renderSortHeader("Telefone", "telefone", managerSort, setManagerSort)}</th>
+                  <th>{renderSortHeader("Status", "status", managerSort, setManagerSort)}</th>
                   <th>Ações</th>
                 </tr>
               </thead>
@@ -534,12 +636,14 @@ export default function GestaoProfessoresPage() {
                   nome: editingProfessor.nome,
                   email: editingProfessor.email,
                   telefone: editingProfessor.telefone,
-                  cpf: editingProfessor.cpf ?? "",
-                  rg: editingProfessor.rg ?? "",
+                  cpf: "",
+                  rg: "",
                   nascimento: normalizeDateToInput(editingProfessor.nascimento),
                 }
               : undefined
           }
+          cpfPreview={editingProfessor ? maskDocumentPreview(editingProfessor.cpf) : undefined}
+          rgPreview={editingProfessor ? maskDocumentPreview(editingProfessor.rg) : undefined}
           onClose={() => setEditingProfessor(null)}
           onSubmit={handleEditProfessor}
         />
@@ -554,12 +658,14 @@ export default function GestaoProfessoresPage() {
                   nome: editingManager.nome,
                   email: editingManager.email,
                   telefone: editingManager.telefone,
-                  cpf: editingManager.cpf ?? "",
-                  rg: editingManager.rg ?? "",
+                  cpf: "",
+                  rg: "",
                   nascimento: normalizeDateToInput(editingManager.nascimento),
                 }
               : undefined
           }
+          cpfPreview={editingManager ? maskDocumentPreview(editingManager.cpf) : undefined}
+          rgPreview={editingManager ? maskDocumentPreview(editingManager.rg) : undefined}
           onClose={() => setEditingManager(null)}
           onSubmit={handleEditManager}
         />

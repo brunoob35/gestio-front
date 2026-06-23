@@ -17,6 +17,8 @@ type ProfessorModalProps = {
   open: boolean;
   mode: "create" | "edit";
   initialValues?: Partial<ProfessorFormValues>;
+  cpfPreview?: string;
+  rgPreview?: string;
   entityLabel?: string;
   onClose: () => void;
   onSubmit: (values: ProfessorFormValues) => Promise<void>;
@@ -36,6 +38,8 @@ export default function ProfessorModal({
   open,
   mode,
   initialValues,
+  cpfPreview,
+  rgPreview,
   entityLabel = "Professor",
   onClose,
   onSubmit,
@@ -168,6 +172,7 @@ export default function ProfessorModal({
                 name="cpf"
                 value={form.cpf}
                 onChange={handleChange}
+                placeholder={mode === "edit" && cpfPreview ? `Atual: ${cpfPreview}` : undefined}
                 required={mode === "create"}
               />
             </label>
@@ -178,6 +183,7 @@ export default function ProfessorModal({
                 name="rg"
                 value={form.rg}
                 onChange={handleChange}
+                placeholder={mode === "edit" && rgPreview ? `Atual: ${rgPreview}` : undefined}
               />
             </label>
 

@@ -90,6 +90,36 @@
   grid-column: 1 / -1;
 }
 
+.professor-modal__consent {
+  padding: 16px 18px;
+  border: 1px solid #dbe4ee;
+  border-radius: 16px;
+  background: #f8fbff;
+}
+
+.professor-modal__consent.is-invalid {
+  border-color: #fca5a5;
+  background: #fff5f5;
+}
+
+.professor-modal__consent-toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.professor-modal__consent-toggle input {
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+}
+
+.professor-modal__consent p {
+  margin: 8px 0 0;
+  color: #475569;
+  line-height: 1.5;
+}
+
 .professor-modal__actions {
   display: flex;
   align-items: center;

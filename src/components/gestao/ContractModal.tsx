@@ -54,6 +54,15 @@ export type ContractFormValues = {
   student_nascimento: string;
 };
 
+const DEFAULT_LESSON_DURATION = "50 min";
+const PERIODICITY_OPTIONS = [
+  "1x por semana",
+  "2x por semana",
+  "3x por semana",
+  "4x por semana",
+  "5x por semana",
+] as const;
+
 const initialFormValues: ContractFormValues = {
   id_tipo_contrato: "",
   id_status: "2",
@@ -64,7 +73,7 @@ const initialFormValues: ContractFormValues = {
   parcelas_descricao: "",
   numero_aulas: "",
   periodicidade: "",
-  tempo_aula: "",
+  tempo_aula: DEFAULT_LESSON_DURATION,
   tempo_contrato: "",
   inicio_contrato: "",
   vencimento_contrato: "",
@@ -138,6 +147,37 @@ function formatCep(value: string) {
   return `${digits.slice(0, 5)}-${digits.slice(5)}`;
 }
 
+function getContractTypeDuration(typeID: string) {
+  switch (typeID) {
+    case "1":
+      return { label: "12 meses", months: 12 };
+    case "2":
+      return { label: "6 meses", months: 6 };
+    case "3":
+      return { label: "3 meses", months: 3 };
+    case "4":
+      return { label: "1 mes", months: 1 };
+    case "5":
+      return { label: "Temporario" };
+    default:
+      return null;
+  }
+}
+
+function addMonthsToDate(dateValue: string, months: number) {
+  const [year, month, day] = dateValue.split("-").map(Number);
+  if (!year || !month || !day) return "";
+
+  const targetMonthIndex = month - 1 + months;
+  const targetYear = year + Math.floor(targetMonthIndex / 12);
+  const normalizedMonthIndex = ((targetMonthIndex % 12) + 12) % 12;
+  const lastDayOfTargetMonth = new Date(Date.UTC(targetYear, normalizedMonthIndex + 1, 0)).getUTCDate();
+  const safeDay = Math.min(day, lastDayOfTargetMonth);
+  const next = new Date(Date.UTC(targetYear, normalizedMonthIndex, safeDay));
+
+  return next.toISOString().slice(0, 10);
+}
+
 export default function ContractModal({
   open,
   mode,
@@ -152,12 +192,14 @@ export default function ContractModal({
   const [activeTab, setActiveTab] = useState<"contract" | "responsible" | "student">("contract");
   const [values, setValues] = useState<ContractFormValues>(initialFormValues);
   const [loading, setLoading] = useState(false);
+  const [loadingResponsibleCep, setLoadingResponsibleCep] = useState(false);
   const [submitAttempted, setSubmitAttempted] = useState(false);
 
   useEffect(() => {
     if (!open) return;
     setValues(initialValues ?? initialFormValues);
     setActiveTab("contract");
+    setLoadingResponsibleCep(false);
     setSubmitAttempted(false);
   }, [initialValues, open]);
 
@@ -179,6 +221,10 @@ export default function ContractModal({
   ) {
     setValues((current) => {
       const next = { ...current, [field]: value };
+      const duration =
+        field === "id_tipo_contrato"
+          ? getContractTypeDuration(String(value))
+          : getContractTypeDuration(next.id_tipo_contrato);
 
       if (field === "valor" || field === "desconto_porcentagem") {
         const baseValue = Number(String(field === "valor" ? value : next.valor).replace(",", ".")) || 0;
@@ -189,11 +235,24 @@ export default function ContractModal({
         next.valor_final = finalValue ? finalValue.toFixed(2) : "";
       }
 
+      if (field === "id_tipo_contrato" || field === "inicio_contrato") {
+        next.tempo_contrato = duration?.label ?? "";
+
+        if (!next.inicio_contrato) {
+          next.vencimento_contrato = "";
+        } else if (duration?.months) {
+          next.vencimento_contrato = addMonthsToDate(next.inicio_contrato, duration.months);
+        } else if (field === "id_tipo_contrato") {
+          next.vencimento_contrato = "";
+        }
+      }
+
       return next;
     });
   }
 
   function switchResponsibleMode(nextMode: "existing" | "new") {
+    setLoadingResponsibleCep(false);
     setValues((current) => ({
       ...current,
       responsible_mode: nextMode,
@@ -213,6 +272,34 @@ export default function ContractModal({
       responsible_estado: "",
       responsible_pais: "Brasil",
     }));
+  }
+
+  async function lookupResponsibleCep(cepValue: string) {
+    const digits = cepValue.replace(/\D/g, "");
+    if (digits.length !== 8) return;
+
+    setLoadingResponsibleCep(true);
+
+    try {
+      const response = await fetch(`https://viacep.com.br/ws/${digits}/json/`);
+      const data = (await response.json()) as Record<string, unknown>;
+
+      if (data.erro === true) return;
+
+      setValues((current) => ({
+        ...current,
+        responsible_cep: formatCep(String(data.cep ?? digits)),
+        responsible_rua: String(data.logradouro ?? current.responsible_rua ?? ""),
+        responsible_bairro: String(data.bairro ?? current.responsible_bairro ?? ""),
+        responsible_cidade: String(data.localidade ?? current.responsible_cidade ?? ""),
+        responsible_estado: String(data.estado ?? data.uf ?? current.responsible_estado ?? ""),
+        responsible_pais: current.responsible_pais || "Brasil",
+      }));
+    } catch (error) {
+      console.error("Erro ao consultar CEP:", error);
+    } finally {
+      setLoadingResponsibleCep(false);
+    }
   }
 
   function switchStudentMode(nextMode: "existing" | "new") {
@@ -466,13 +553,18 @@ export default function ContractModal({
               </label>
 
               <label>
-                <span>Periodicidade</span>
-                <input
-                  type="text"
+                <span>Aulas por semana</span>
+                <select
                   value={values.periodicidade}
                   onChange={(event) => updateField("periodicidade", event.target.value)}
-                  placeholder="Ex.: 2x por semana"
-                />
+                >
+                  <option value="">Selecione</option>
+                  {PERIODICITY_OPTIONS.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
               </label>
 
               <label>
@@ -490,8 +582,8 @@ export default function ContractModal({
                 <input
                   type="text"
                   value={values.tempo_contrato}
-                  onChange={(event) => updateField("tempo_contrato", event.target.value)}
-                  placeholder="Ex.: 12 meses"
+                  readOnly
+                  placeholder="Definida pelo tipo de contrato"
                 />
               </label>
 
@@ -606,12 +698,18 @@ export default function ContractModal({
 
                   <label className={invalidResponsibleCep ? "is-invalid" : ""}>
                     <span>CEP *</span>
-                    <input
-                      type="text"
-                      value={values.responsible_cep}
-                      onChange={(event) => updateField("responsible_cep", formatCep(event.target.value))}
-                      placeholder="00000-000"
-                    />
+                    <div className="contract-modal__input-with-indicator">
+                      <input
+                        type="text"
+                        value={values.responsible_cep}
+                        onChange={(event) => updateField("responsible_cep", formatCep(event.target.value))}
+                        onBlur={(event) => void lookupResponsibleCep(event.target.value)}
+                        placeholder="00000-000"
+                      />
+                      {loadingResponsibleCep ? (
+                        <span className="contract-modal__spinner" aria-hidden="true" />
+                      ) : null}
+                    </div>
                   </label>
 
                   <label className={`contract-modal__full ${invalidResponsibleStreet ? "is-invalid" : ""}`}>

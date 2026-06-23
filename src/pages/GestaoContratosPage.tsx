@@ -31,6 +31,17 @@ import studentIcon from "../assets/icons/student-svgrepo-com.svg";
 import contractIcon from "../assets/icons/file-alt-svgrepo-com.svg";
 import pencilIcon from "../assets/icons/pencil-svgrepo-com.svg";
 import { getLessonStatusPresentation } from "../utils/lessonStatus";
+import { maskDocumentPreview } from "../utils/documents";
+import {
+  applyDirection,
+  compareDate,
+  compareNumber,
+  compareText,
+  cycleSort,
+  getSortIndicator,
+  getSortLabel,
+  type SortState,
+} from "../utils/tableSorting";
 import "./GestaoContratosPage.css";
 
 function formatCurrency(value: number) {
@@ -70,11 +81,111 @@ function buildStatusClassName(statusName?: string) {
       return "is-pending";
     case "vencido":
       return "is-expired";
+    case "inativo":
+      return "is-inactive";
     case "prox. vencimento":
       return "is-warning";
     default:
       return "";
   }
+}
+
+function getContractStatusOrder(statusName?: string) {
+  switch ((statusName ?? "").toLowerCase()) {
+    case "pendente":
+      return 0;
+    case "ativo":
+      return 1;
+    case "prox. vencimento":
+      return 2;
+    case "vencido":
+      return 3;
+    case "inativo":
+      return 4;
+    default:
+      return 5;
+  }
+}
+
+type ContractSortKey =
+  | "id"
+  | "student"
+  | "responsible"
+  | "type"
+  | "start_date"
+  | "due_date"
+  | "value"
+  | "lessons"
+  | "status";
+
+function sortContracts(
+  items: ContractRow[],
+  sort: SortState<ContractSortKey>
+) {
+  if (sort.key) {
+    return [...items].sort((left, right) => {
+      let comparison = 0;
+
+      switch (sort.key) {
+        case "id":
+          comparison = compareNumber(left.id, right.id);
+          break;
+        case "student":
+          comparison = compareText(left.student_name, right.student_name);
+          break;
+        case "responsible":
+          comparison = compareText(left.responsible_name, right.responsible_name);
+          break;
+        case "type":
+          comparison = compareText(left.contract_type_name, right.contract_type_name);
+          break;
+        case "start_date":
+          comparison = compareDate(left.start_date, right.start_date);
+          break;
+        case "due_date":
+          comparison = compareDate(left.due_date, right.due_date);
+          break;
+        case "value":
+          comparison = compareNumber(left.final_value || left.value, right.final_value || right.value);
+          break;
+        case "lessons":
+          comparison = compareNumber(left.lessons_count, right.lessons_count);
+          break;
+        case "status":
+          comparison =
+            getContractStatusOrder(left.effective_status_name) -
+            getContractStatusOrder(right.effective_status_name);
+          break;
+      }
+
+      if (comparison === 0) {
+        comparison = compareText(left.student_name, right.student_name);
+      }
+
+      return applyDirection(comparison, sort.direction);
+    });
+  }
+
+  return [...items].sort((left, right) => {
+    const statusDifference =
+      getContractStatusOrder(left.effective_status_name) -
+      getContractStatusOrder(right.effective_status_name);
+
+    if (statusDifference !== 0) {
+      return statusDifference;
+    }
+
+    const studentDifference = left.student_name.localeCompare(right.student_name, "pt-BR", {
+      sensitivity: "base",
+    });
+    if (studentDifference !== 0) {
+      return studentDifference;
+    }
+
+    return left.responsible_name.localeCompare(right.responsible_name, "pt-BR", {
+      sensitivity: "base",
+    });
+  });
 }
 
 function buildLessonStatusClassName(tone: string) {
@@ -285,10 +396,18 @@ export default function GestaoContratosPage() {
   const [expandedContractClassId, setExpandedContractClassId] = useState<Record<number, number | null>>({});
   const [contractClassLessons, setContractClassLessons] = useState<Record<number, Lesson[]>>({});
   const [loadingContractClassId, setLoadingContractClassId] = useState<number | null>(null);
+  const [inactiveContracts, setInactiveContracts] = useState<ContractRow[]>([]);
+  const [inactiveContractsOpen, setInactiveContractsOpen] = useState(false);
+  const [inactiveContractsLoading, setInactiveContractsLoading] = useState(false);
+  const [inactiveContractsLoaded, setInactiveContractsLoaded] = useState(false);
+  const [sort, setSort] = useState<SortState<ContractSortKey>>({
+    key: null,
+    direction: "asc",
+  });
 
   async function loadContractData() {
     const [contractsData, typesData, statusesData] = await Promise.all([
-      fetchContracts(),
+      fetchContracts({ group: "main" }),
       fetchContractTypes(),
       fetchContractStatuses(),
     ]);
@@ -319,9 +438,10 @@ export default function GestaoContratosPage() {
 
   const filteredContracts = useMemo(() => {
     const term = search.trim().toLowerCase();
-    if (!term) return contracts;
+    const sortedContracts = sortContracts(contracts, sort);
+    if (!term) return sortedContracts;
 
-    return contracts.filter((contract) => {
+    return sortedContracts.filter((contract) => {
       return (
         contract.code.toLowerCase().includes(term) ||
         contract.student_name.toLowerCase().includes(term) ||
@@ -329,7 +449,39 @@ export default function GestaoContratosPage() {
         contract.contract_type_name.toLowerCase().includes(term)
       );
     });
-  }, [contracts, search]);
+  }, [contracts, search, sort]);
+
+  const filteredInactiveContracts = useMemo(() => {
+    const term = search.trim().toLowerCase();
+    const sortedContracts = sortContracts(inactiveContracts, sort);
+    if (!term) return sortedContracts;
+
+    return sortedContracts.filter((contract) => {
+      return (
+        contract.code.toLowerCase().includes(term) ||
+        contract.student_name.toLowerCase().includes(term) ||
+        contract.responsible_name.toLowerCase().includes(term) ||
+        contract.contract_type_name.toLowerCase().includes(term)
+      );
+    });
+  }, [inactiveContracts, search, sort]);
+
+  function renderSortHeader(label: string, key: ContractSortKey) {
+    return (
+      <div className="gestao-table__name-header">
+        <span>{label}</span>
+        <button
+          type="button"
+          className="gestao-table__sort-button"
+          onClick={() => setSort((current) => cycleSort(current, key))}
+          aria-label={getSortLabel(sort, key, label)}
+          title={getSortLabel(sort, key, label)}
+        >
+          {getSortIndicator(sort, key)}
+        </button>
+      </div>
+    );
+  }
 
   const summary = useMemo(() => {
     return filteredContracts.reduce(
@@ -345,8 +497,11 @@ export default function GestaoContratosPage() {
   }, [filteredContracts]);
 
   async function handleCreate(values: ContractFormValues) {
-    const created = await createContract(buildContractPayload(values));
-    setContracts((current) => [created, ...current.filter((item) => item.id !== created.id)]);
+    await createContract(buildContractPayload(values));
+    await loadContractData();
+    if (inactiveContractsOpen) {
+      await loadInactiveContracts();
+    }
     setFeedback("Contrato cadastrado com sucesso.");
     await Promise.all([loadCustomers({ force: true }), loadStudents({ force: true })]);
   }
@@ -354,11 +509,34 @@ export default function GestaoContratosPage() {
   async function handleEdit(values: ContractFormValues) {
     if (!editingContract) return;
 
-    const updated = await updateContract(editingContract.id, buildContractPayload(values));
-    setContracts((current) => current.map((item) => (item.id === updated.id ? updated : item)));
+    await updateContract(editingContract.id, buildContractPayload(values));
+    await loadContractData();
+    if (inactiveContractsOpen) {
+      await loadInactiveContracts();
+    }
     setFeedback("Contrato atualizado com sucesso.");
     setEditingContract(null);
     await Promise.all([loadCustomers({ force: true }), loadStudents({ force: true })]);
+  }
+
+  async function loadInactiveContracts() {
+    setInactiveContractsLoading(true);
+    try {
+      const contractsData = await fetchContracts({ group: "inactive" });
+      setInactiveContracts(contractsData);
+      setInactiveContractsLoaded(true);
+    } finally {
+      setInactiveContractsLoading(false);
+    }
+  }
+
+  async function handleToggleInactiveContracts() {
+    const nextOpen = !inactiveContractsOpen;
+    setInactiveContractsOpen(nextOpen);
+
+    if (nextOpen && !inactiveContractsLoaded) {
+      await loadInactiveContracts();
+    }
   }
 
   async function handleCreateClass(values: ClassFormValues) {
@@ -496,8 +674,8 @@ export default function GestaoContratosPage() {
                     <li><strong>Representante:</strong> {details.representative_name || "—"}</li>
                     <li><strong>Email:</strong> {details.representative_email || "—"}</li>
                     <li><strong>Telefone:</strong> {details.representative_phone || "—"}</li>
-                    <li><strong>CPF:</strong> {details.representative_cpf || "—"}</li>
-                    <li><strong>RG:</strong> {details.representative_rg || "—"}</li>
+                    <li><strong>CPF:</strong> {maskDocumentPreview(details.representative_cpf)}</li>
+                    <li><strong>RG:</strong> {maskDocumentPreview(details.representative_rg)}</li>
                     <li><strong>Estado civil do representante:</strong> {details.representative_civil_status || "—"}</li>
                   </ul>
                 </div>
@@ -603,6 +781,102 @@ export default function GestaoContratosPage() {
     );
   }
 
+  function renderContractsTable(items: ContractRow[], emptyMessage: string) {
+    if (!items.length) {
+      return (
+        <div className="gestao-contracts__empty">
+          <p>{emptyMessage}</p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="gestao-contracts__table-wrapper">
+        <table className="gestao-contracts__table">
+          <thead>
+            <tr>
+              <th>{renderSortHeader("ID", "id")}</th>
+              <th>{renderSortHeader("Aluno", "student")}</th>
+              <th>{renderSortHeader("Responsável", "responsible")}</th>
+              <th>{renderSortHeader("Tipo", "type")}</th>
+              <th>{renderSortHeader("Data Início", "start_date")}</th>
+              <th>{renderSortHeader("Vencimento", "due_date")}</th>
+              <th>{renderSortHeader("Valor", "value")}</th>
+              <th>{renderSortHeader("Aulas", "lessons")}</th>
+              <th>{renderSortHeader("Status", "status")}</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {items.map((contract) => (
+              <Fragment key={contract.id}>
+                <tr>
+                  <td>{contract.code}</td>
+                  <td>{contract.student_name}</td>
+                  <td>{contract.responsible_name}</td>
+                  <td>{contract.contract_type_name}</td>
+                  <td>{formatDate(contract.start_date)}</td>
+                  <td>{formatDate(contract.due_date)}</td>
+                  <td>{formatCurrency(contract.final_value || contract.value)}</td>
+                  <td>{contract.lessons_count ?? "—"}</td>
+                  <td>
+                    <span
+                      className={`gestao-contracts__status ${buildStatusClassName(
+                        contract.effective_status_name
+                      )}`}
+                    >
+                      {contract.effective_status_name}
+                    </span>
+                  </td>
+                  <td>
+                    <div className="gestao-contracts__actions">
+                      <button
+                        type="button"
+                        className="gestao-contracts__icon-button"
+                        onClick={() => void handleToggleExpand(contract)}
+                        title={
+                          expandedContractId === contract.id
+                            ? "Fechar detalhes do contrato"
+                            : "Ver detalhes do contrato"
+                        }
+                      >
+                        <img src={eyeIcon} alt="" aria-hidden="true" />
+                      </button>
+
+                      <button
+                        type="button"
+                        className="gestao-contracts__icon-button"
+                        onClick={() => setEditingContract(contract)}
+                        title="Editar contrato"
+                      >
+                        <img src={pencilIcon} alt="" aria-hidden="true" />
+                      </button>
+
+                      <button
+                        type="button"
+                        className="gestao-contracts__icon-button"
+                        onClick={() => setClassSourceContract(contract)}
+                        title={
+                          contract.class_id
+                            ? "Este contrato já possui uma turma vinculada"
+                            : "Criar turma a partir do contrato"
+                        }
+                        disabled={Boolean(contract.class_id)}
+                      >
+                        <img src={studentIcon} alt="" aria-hidden="true" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                {expandedContractId === contract.id ? renderExpandedContract(contract) : null}
+              </Fragment>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+
   return (
     <GestaoShell title="Contratos">
       <section className="gestao-contracts">
@@ -673,97 +947,43 @@ export default function GestaoContratosPage() {
         <section className="gestao-contracts__table-card">
           <div className="gestao-contracts__table-header">
             <h3>Contratos Cadastrados</h3>
+            <p>Ordenação padrão: status, depois ordem alfabética.</p>
           </div>
 
           {loading ? (
             <div className="gestao-contracts__empty">
               <p>Carregando contratos...</p>
             </div>
-          ) : filteredContracts.length ? (
-            <div className="gestao-contracts__table-wrapper">
-              <table className="gestao-contracts__table">
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>Aluno</th>
-                    <th>Responsável</th>
-                    <th>Tipo</th>
-                    <th>Data Início</th>
-                    <th>Vencimento</th>
-                    <th>Valor</th>
-                    <th>Aulas</th>
-                    <th>Status</th>
-                    <th>Ações</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredContracts.map((contract) => (
-                    <Fragment key={contract.id}>
-                      <tr>
-                        <td>{contract.code}</td>
-                        <td>{contract.student_name}</td>
-                        <td>{contract.responsible_name}</td>
-                        <td>{contract.contract_type_name}</td>
-                        <td>{formatDate(contract.start_date)}</td>
-                        <td>{formatDate(contract.due_date)}</td>
-                        <td>{formatCurrency(contract.final_value || contract.value)}</td>
-                        <td>{contract.lessons_count ?? "—"}</td>
-                        <td>
-                          <span
-                            className={`gestao-contracts__status ${buildStatusClassName(
-                              contract.effective_status_name
-                            )}`}
-                          >
-                            {contract.effective_status_name}
-                          </span>
-                        </td>
-                        <td>
-                          <div className="gestao-contracts__actions">
-                            <button
-                              type="button"
-                              className="gestao-contracts__icon-button"
-                              onClick={() => void handleToggleExpand(contract)}
-                              title={expandedContractId === contract.id ? "Fechar detalhes do contrato" : "Ver detalhes do contrato"}
-                            >
-                              <img src={eyeIcon} alt="" aria-hidden="true" />
-                            </button>
-
-                            <button
-                              type="button"
-                              className="gestao-contracts__icon-button"
-                              onClick={() => setEditingContract(contract)}
-                              title="Editar contrato"
-                            >
-                              <img src={pencilIcon} alt="" aria-hidden="true" />
-                            </button>
-
-                            <button
-                              type="button"
-                              className="gestao-contracts__icon-button"
-                              onClick={() => setClassSourceContract(contract)}
-                              title={
-                                contract.class_id
-                                  ? "Este contrato já possui uma turma vinculada"
-                                  : "Criar turma a partir do contrato"
-                              }
-                              disabled={Boolean(contract.class_id)}
-                            >
-                              <img src={studentIcon} alt="" aria-hidden="true" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                      {expandedContractId === contract.id ? renderExpandedContract(contract) : null}
-                    </Fragment>
-                  ))}
-                </tbody>
-              </table>
-            </div>
           ) : (
-            <div className="gestao-contracts__empty">
-              <p>Nenhum contrato encontrado para os filtros atuais.</p>
-            </div>
+            renderContractsTable(filteredContracts, "Nenhum contrato encontrado para os filtros atuais.")
           )}
+        </section>
+
+        <section className="gestao-contracts__table-card">
+          <button
+            type="button"
+            className="gestao-contracts__collapse-header"
+            onClick={() => void handleToggleInactiveContracts()}
+          >
+            <div>
+              <h3>Contratos Inativos</h3>
+              <p>Esta tabela fica recolhida e só carrega quando você abre.</p>
+            </div>
+            <span>{inactiveContractsOpen ? "−" : "+"}</span>
+          </button>
+
+          {inactiveContractsOpen ? (
+            inactiveContractsLoading ? (
+              <div className="gestao-contracts__empty">
+                <p>Carregando contratos inativos...</p>
+              </div>
+            ) : (
+              renderContractsTable(
+                filteredInactiveContracts,
+                "Nenhum contrato inativo encontrado para os filtros atuais."
+              )
+            )
+          ) : null}
         </section>
       </section>
 

@@ -5,6 +5,7 @@ import LoginPage from "../pages/LoginPage";
 import ForgotPasswordPage from "../pages/ForgotPasswordPage";
 import FirstAccessPage from "../pages/FirstAccessPage";
 import ResetPasswordPage from "../pages/ResetPasswordPage";
+import LGPDConsentPage from "../pages/LGPDConsentPage";
 import GestaoHomePage from "../pages/GestaoHomePage";
 import GestaoProfessoresPage from "../pages/GestaoProfessoresPage";
 import GestaoProfessorViewPage from "../pages/GestaoProfessorViewPage";
@@ -13,6 +14,7 @@ import GestaoAlunosPage from "../pages/GestaoAlunosPage";
 import GestaoClientesPage from "../pages/GestaoClientesPage";
 import GestaoContratosPage from "../pages/GestaoContratosPage";
 import GestaoPresencasPage from "../pages/GestaoPresencasPage";
+import GestaoRelatoriosPage from "../pages/GestaoRelatoriosPage";
 import GestaoSettingsPage from "../pages/GestaoSettingsPage";
 import ProfessorHomePage from "../pages/ProfessorHomePage";
 import ProfessorClassesPage from "../pages/ProfessorClassesPage";
@@ -20,7 +22,7 @@ import ProfessorLessonsPage from "../pages/ProfessorLessonsPage";
 import ProfessorSettingsPage from "../pages/ProfessorSettingsPage";
 import ProfessorStudentsPage from "../pages/ProfessorStudentsPage";
 
-import { getUserPermissions, isAuthenticated } from "../services/auth";
+import { getUserPermissions, hasPermission, isAuthenticated, isLGPDPending } from "../services/auth";
 
 function PrivateRoute({
   children,
@@ -31,17 +33,28 @@ function PrivateRoute({
 }) {
   const authenticated = isAuthenticated();
   const permission = getUserPermissions();
+  const lgpdPending = isLGPDPending();
 
   if (!authenticated) {
     return <Navigate to="/" replace />;
   }
 
-  if (!permission || !allowedPermissions.includes(permission)) {
-    if (permission === 1 || permission === 4) {
+  if (lgpdPending) {
+    return <Navigate to="/lgpd-consent" replace />;
+  }
+
+  const hasAllowedPermission =
+    permission !== null &&
+    allowedPermissions.some((requiredPermission) =>
+      hasPermission(permission, requiredPermission)
+    );
+
+  if (!hasAllowedPermission) {
+    if (hasPermission(permission, 1) || hasPermission(permission, 4)) {
       return <Navigate to="/gestao" replace />;
     }
 
-    if (permission === 2) {
+    if (hasPermission(permission, 2)) {
       return <Navigate to="/professor" replace />;
     }
 
@@ -54,13 +67,15 @@ function PrivateRoute({
 export function AppRoutes() {
   const authenticated = isAuthenticated();
   const permission = getUserPermissions();
+  const lgpdPending = isLGPDPending();
 
   function getInitialRedirect() {
     if (!authenticated) return <LoginPage />;
-    if (permission === 1 || permission === 4) {
+    if (lgpdPending) return <Navigate to="/lgpd-consent" replace />;
+    if (hasPermission(permission, 1) || hasPermission(permission, 4)) {
       return <Navigate to="/gestao" replace />;
     }
-    if (permission === 2) {
+    if (hasPermission(permission, 2)) {
       return <Navigate to="/professor" replace />;
     }
     return <LoginPage />;
@@ -72,6 +87,7 @@ export function AppRoutes() {
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/first-access" element={<FirstAccessPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
+      <Route path="/lgpd-consent" element={<LGPDConsentPage />} />
 
       <Route
         path="/gestao"
@@ -186,6 +202,15 @@ export function AppRoutes() {
         element={
           <PrivateRoute allowedPermissions={[1, 4]}>
             <GestaoPresencasPage />
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/gestao/relatorios"
+        element={
+          <PrivateRoute allowedPermissions={[4]}>
+            <GestaoRelatoriosPage />
           </PrivateRoute>
         }
       />

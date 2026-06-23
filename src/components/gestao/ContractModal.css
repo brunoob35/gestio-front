@@ -112,6 +112,27 @@
   background: #f9fbff;
 }
 
+.contract-modal__input-with-indicator {
+  position: relative;
+}
+
+.contract-modal__input-with-indicator input {
+  padding-right: 46px;
+}
+
+.contract-modal__spinner {
+  position: absolute;
+  top: 50%;
+  right: 16px;
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(80, 103, 164, 0.2);
+  border-top-color: #5067a4;
+  border-radius: 999px;
+  transform: translateY(-50%);
+  animation: contract-modal-spin 0.7s linear infinite;
+}
+
 .contract-modal__grid label.is-invalid input,
 .contract-modal__grid label.is-invalid select,
 .contract-modal__section label.is-invalid input,
@@ -173,6 +194,12 @@
 .contract-modal__button:disabled {
   opacity: 0.7;
   cursor: not-allowed;
+}
+
+@keyframes contract-modal-spin {
+  to {
+    transform: translateY(-50%) rotate(360deg);
+  }
 }
 
 @media (max-width: 720px) {

@@ -1,3 +1,4 @@
+import axios from "axios";
 import { useEffect, useMemo, useState } from "react";
 import type {
   Lesson,
@@ -92,6 +93,12 @@ const initialLessonEditor: LessonEditorValues = {
   notes: "",
   status_id: "1",
 };
+
+function formatCep(value: string) {
+  const digits = value.replace(/\D/g, "").slice(0, 8);
+  if (digits.length <= 5) return digits;
+  return `${digits.slice(0, 5)}-${digits.slice(5)}`;
+}
 
 function extractDateTimeParts(value?: string) {
   if (!value) {
@@ -304,8 +311,32 @@ export default function ClassModal({
 
     setForm((current) => ({
       ...current,
-      [name]: value,
+      [name]: name === "cep" ? formatCep(value) : value,
     }));
+  }
+
+  async function lookupCep(cepValue: string) {
+    const digits = cepValue.replace(/\D/g, "");
+    if (digits.length !== 8) return;
+
+    try {
+      const response = await fetch(`https://viacep.com.br/ws/${digits}/json/`);
+      const data = (await response.json()) as Record<string, unknown>;
+
+      if (data.erro === true) return;
+
+      setForm((current) => ({
+        ...current,
+        cep: formatCep(String(data.cep ?? digits)),
+        rua: String(data.logradouro ?? current.rua ?? ""),
+        bairro: String(data.bairro ?? current.bairro ?? ""),
+        cidade: String(data.localidade ?? current.cidade ?? ""),
+        estado: String(data.estado ?? data.uf ?? current.estado ?? ""),
+        pais: current.pais || "Brasil",
+      }));
+    } catch (error) {
+      console.error("Erro ao consultar CEP:", error);
+    }
   }
 
   async function handleSubmit(event: React.FormEvent) {
@@ -343,6 +374,23 @@ export default function ClassModal({
     try {
       await onSubmit(form);
       onClose();
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const apiMessage =
+          typeof error.response?.data === "string"
+            ? error.response.data
+            : typeof error.response?.data?.erro === "string"
+            ? error.response.data.erro
+            : typeof error.response?.data?.error === "string"
+            ? error.response.data.error
+            : typeof error.response?.data?.message === "string"
+            ? error.response.data.message
+            : "";
+
+        setSubmitError(apiMessage || "Não foi possível salvar a turma.");
+      } else {
+        setSubmitError("Não foi possível salvar a turma.");
+      }
     } finally {
       setLoading(false);
     }
@@ -595,6 +643,7 @@ export default function ClassModal({
                     name="cep"
                     value={form.cep}
                     onChange={handleInputChange}
+                    onBlur={(event) => void lookupCep(event.target.value)}
                     placeholder="Ex.: 89000-000"
                   />
                 </label>

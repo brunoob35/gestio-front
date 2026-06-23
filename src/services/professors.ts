@@ -10,6 +10,9 @@ export type ProfessorRow = {
   cpf?: string;
   rg?: string;
   nascimento?: string;
+  lgpd_aceito?: boolean;
+  lgpd_aceito_em?: string;
+  lgpd_finalidade?: string;
   turmasAtivas: number;
   status: string;
 };
@@ -23,6 +26,8 @@ export type ProfessorPayload = {
   rg?: string;
   ativo?: boolean;
   nascimento?: string;
+  lgpd_aceito?: boolean;
+  lgpd_finalidade?: string;
 };
 
 type RawProfessor = Record<string, unknown>;
@@ -97,6 +102,9 @@ function normalizeProfessor(item: RawProfessor): ProfessorRow {
     cpf,
     rg,
     nascimento,
+    lgpd_aceito: item.lgpd_aceito === true || item.lgpd_aceito === 1,
+    lgpd_aceito_em: asString(item.lgpd_aceito_em) || undefined,
+    lgpd_finalidade: asString(item.lgpd_finalidade) || undefined,
     turmasAtivas: 0,
     status: statusRaw || "ativo",
   };

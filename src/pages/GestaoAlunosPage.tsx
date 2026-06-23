@@ -674,7 +674,7 @@ export default function GestaoAlunosPage() {
           <h3>{title}</h3>
         </div>
 
-        <div className="gestao-professores__table-wrapper">
+        <div className="gestao-professores__table-wrapper gestao-alunos__table-wrapper">
           <table className="gestao-professores__table">
             <thead>
               <tr>

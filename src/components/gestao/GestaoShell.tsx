@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
-import { clearToken } from "../../services/auth";
+import { clearToken, getUserPermissions, hasPermission } from "../../services/auth";
 
 import barsIcon from "../../assets/icons/bars-svgrepo-com.svg";
 import dashboardIcon from "../../assets/icons/dashboard-svgrepo-com.svg";
@@ -47,61 +47,75 @@ export default function GestaoShell({ title, children }: GestaoShellProps) {
 
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const permissions = getUserPermissions();
+  const isMaster = hasPermission(permissions, 4);
+
+  const baseMenuItems: MenuItem[] = [
+    { key: "dashboard", label: "Dashboard", icon: dashboardIcon, path: "/gestao" },
+    {
+      key: "professores",
+      label: "Usuários",
+      icon: userGroupIcon,
+      path: "/gestao/professores",
+    },
+    {
+      key: "alunos",
+      label: "Alunos",
+      icon: studentIcon,
+      path: "/gestao/alunos",
+    },
+    {
+      key: "clientes",
+      label: "Clientes",
+      icon: userCircleIcon,
+      path: "/gestao/clientes",
+    },
+    {
+      key: "turmas",
+      label: "Turmas",
+      icon: bookOpenIcon,
+      path: "/gestao/turmas",
+    },
+    {
+      key: "contratos",
+      label: "Contratos",
+      icon: fileAltIcon,
+      path: "/gestao/contratos",
+    },
+    {
+      key: "presencas",
+      label: "Presenças",
+      icon: calendarIcon,
+      path: "/gestao/presencas",
+    },
+    {
+      key: "configuracoes",
+      label: "Configurações",
+      icon: settingsIcon,
+      path: "/gestao/configuracoes",
+    },
+  ];
 
   const menuItems = useMemo<MenuItem[]>(
-    () => [
-      { key: "dashboard", label: "Dashboard", icon: dashboardIcon, path: "/gestao" },
-      {
-        key: "professores",
-        label: "Usuários",
-        icon: userGroupIcon,
-        path: "/gestao/professores",
-      },
-      {
-        key: "alunos",
-        label: "Alunos",
-        icon: studentIcon,
-        path: "/gestao/alunos",
-      },
-      {
-        key: "clientes",
-        label: "Clientes",
-        icon: userCircleIcon,
-        path: "/gestao/clientes",
-      },
-      {
-        key: "turmas",
-        label: "Turmas",
-        icon: bookOpenIcon,
-        path: "/gestao/turmas",
-      },
-      {
-        key: "contratos",
-        label: "Contratos",
-        icon: fileAltIcon,
-        path: "/gestao/contratos",
-      },
-      {
-        key: "presencas",
-        label: "Presenças",
-        icon: calendarIcon,
-        path: "/gestao/presencas",
-      },
-      {
+    () => {
+      if (!isMaster) {
+        return baseMenuItems;
+      }
+
+      const reportsItem: MenuItem = {
         key: "relatorios",
-        label: "Relatórios",
+        label: "Auditoria",
         icon: graphIcon,
         path: "/gestao/relatorios",
-        disabled: true,
-      },
-      {
-        key: "configuracoes",
-        label: "Configurações",
-        icon: settingsIcon,
-        path: "/gestao/configuracoes",
-      },
-    ],
-    []
+      };
+
+      return [
+        ...baseMenuItems.slice(0, 7),
+        reportsItem,
+        ...baseMenuItems.slice(7),
+      ];
+    },
+    [baseMenuItems, isMaster]
   );
 
   const bottomItems = useMemo<MenuItem[]>(

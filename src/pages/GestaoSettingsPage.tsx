@@ -100,7 +100,10 @@ export default function GestaoSettingsPage() {
 
   function handleProfileChange(event: React.ChangeEvent<HTMLInputElement>) {
     const { name, value } = event.target;
-    setProfileForm((current) => ({ ...current, [name]: value }));
+    setProfileForm((current) => ({
+      ...current,
+      [name]: value,
+    }));
     setProfileError("");
     setProfileSuccess("");
   }

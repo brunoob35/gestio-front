@@ -145,9 +145,21 @@
 
 .student-modal__actions {
   display: flex;
+  align-items: center;
   justify-content: flex-end;
+  flex-wrap: wrap;
   gap: 12px;
   margin-top: 28px;
+}
+
+.student-modal__feedback {
+  margin: 0 auto 0 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.student-modal__feedback--error {
+  color: #b91c1c;
 }
 
 .student-modal__button {
